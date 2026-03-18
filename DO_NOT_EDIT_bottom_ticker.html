@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: transparent; 
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        .ticker-wrap {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 50px; 
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 2px solid #ff9d00;
+            display: flex;
+            overflow: hidden; 
+        }
+
+        .ticker-move {
+            display: flex;
+            white-space: nowrap;
+            /* 30s speed - higher is slower */
+            animation: ticker-loop 30s linear infinite;
+        }
+
+        @keyframes ticker-loop {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } 
+        }
+
+        .player-entry {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 30px; 
+            font-size: 22px;
+        }
+
+        .rank {
+            background: #ff9d00;
+            color: black;
+            font-weight: 900;
+            padding: 1px 8px;
+            border-radius: 3px;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .name { font-weight: 800; color: #fff; margin-right: 12px; }
+        .stat-label { color: #888; margin-right: 4px; font-size: 15px; }
+        .stat-val { color: #ff9d00; font-weight: bold; margin-right: 15px; }
+        .divider { color: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+    <div id="ticker" class="ticker-move"></div>
+</div>
+
+<script>
+    const CONFIG_URL = "http://localhost:3000/config";
+
+    async function fetchNoCache(url) {
+        const sep = url.includes("?") ? "&" : "?";
+        return fetch(url + sep + "t=" + Date.now(), { cache: "no-store" });
+    }
+
+    async function getEndpoint() {
+        try {
+            const r = await fetch("http://localhost:3000/config");
+            if (!r.ok) return "";
+            const settings = await r.json();
+            return settings.api_endpoint || "";
+        } catch { return ""; }
+    }
+
+
+    // Exclude armor crews and artillery gunners from infantry lists
+    const EXCLUDED_WEAPONS_LIST = [
+        'artillery','lefh','155mm','105mm','pak40','anti_tank',
+        'zis3','88mm','75mm','76mm','tank','mine'
+    ];
+    function isArtyOrArmor(p) {
+        if ((p.v_kills || 0) > (Number(p.kills || 0) * 0.4)) return true;
+        if (!p.weapons) return false;
+        const top = Object.entries(p.weapons).sort((a,b) => b[1]-a[1])[0];
+        if (!top) return false;
+        return EXCLUDED_WEAPONS_LIST.some(ex => top[0].toLowerCase().includes(ex));
+    }
+    async function updateTicker() {
+        try {
+            const endpoint = await getEndpoint();
+            if (!endpoint) return;
+
+            const res = await fetchNoCache(endpoint);
+            const data = await res.json();
+            const stats = data?.result?.stats;
+
+            if (Array.isArray(stats)) {
+                const topKillers = stats
+                    .filter(p => !isArtyOrArmor(p))
+                    .sort((a, b) => b.kills - a.kills)
+                    .slice(0, 5);
+                
+                const playerHtml = topKillers.map((p, index) => `
+                    <div class="player-entry">
+                        <span class="rank">${index + 1}</span>
+                        <span class="name">${p.player}</span>
+                        <span class="stat-label">K:</span><span class="stat-val">${p.kills}</span>
+                        <span class="stat-label">CBT:</span><span class="stat-val">${p.combat}</span>
+                        <span class="divider"> // </span>
+                    </div>
+                `).join('');
+
+                const ticker = document.getElementById('ticker');
+                // Duplicate the HTML to create a seamless infinite loop
+                ticker.innerHTML = playerHtml + playerHtml;
+            }
+        } catch (e) { 
+            console.error("Ticker update failed"); 
+        }
+    }
+
+    // Refresh data every 2 minutes
+    let cachedEndpoint = "";
+    async function pollConfig() {
+        try {
+            const r = await fetch(CONFIG_URL + "?t=" + Date.now(), { cache: "no-store" });
+            if (!r.ok) throw new Error("config " + r.status);
+            const cfg = await r.json();
+            if (cfg && cfg.api_endpoint !== undefined) cachedEndpoint = cfg.api_endpoint || "";
+        } catch(e) { console.warn("[HLL] pollConfig failed:", e.message); }
+    }
+    pollConfig().then(() => updateTicker());
+    setInterval(pollConfig, 1000);
+    setInterval(updateTicker, 4000);
+</script>
+</body>
+</html>
