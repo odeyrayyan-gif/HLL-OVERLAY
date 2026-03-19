@@ -136,7 +136,7 @@
 
 <script>
 const CONFIG_URL = "http://localhost:3000/config";
-const REFRESH_MS = 2000;
+const REFRESH_MS = 1000;
 const ALERT_THRESHOLDS = [5, 10, 15, 20, 25];
 
 const previousStats = {};
@@ -161,14 +161,28 @@ async function getEndpoint() {
     } catch { return ""; }
 }
 
+const ARTY_EXCLUSIONS = [
+    "howitzer", "artillery", "150mm", "155mm", "105mm", "lefh", "sfh",
+    "katyusha", "mlrs", "zis-3", "zis3"
+];
+
+function isArtillery(p) {
+    if (!p.weapons) return false;
+    return Object.keys(p.weapons).some(w =>
+        ARTY_EXCLUSIONS.some(k => w.toLowerCase().includes(k))
+    );
+}
+
 function getPlayers(data) {
     const stats = data?.result?.stats;
     if (!Array.isArray(stats)) return [];
-    return stats.map(p => ({
-        name: p.player || "Unknown",
-        kills: Number(p.kills || 0),
-        deaths: Number(p.deaths || 0)
-    }));
+    return stats
+        .filter(p => !isArtillery(p))
+        .map(p => ({
+            name: p.player || "Unknown",
+            kills: Number(p.kills || 0),
+            deaths: Number(p.deaths || 0)
+        }));
 }
 
 function getTierClass(streak) {
@@ -218,7 +232,7 @@ async function poll() {
     try {
         const endpoint = cachedKSEndpoint;
         if (!endpoint) {
-            document.getElementById("debugPill").textContent = "DO_NOT_EDIT_settings.json error";
+            document.getElementById("debugPill").textContent = "Awaiting API — check hub";
             return;
         }
 
@@ -227,19 +241,35 @@ async function poll() {
 
         const data = await res.json();
         const players = getPlayers(data);
+
+        // ── BASELINE PHASE — record current state, fire nothing ──
+        // Run first 3 polls as baseline to avoid spam on load
+        if (!initialized) {
+            players.forEach(p => {
+                previousStats[p.name] = { kills: p.kills, deaths: p.deaths };
+                if (liveStreaks[p.name] === undefined) liveStreaks[p.name] = 0;
+            });
+            baselineCount++;
+            if (baselineCount >= 3) initialized = true;
+            document.getElementById("debugPill").textContent =
+                `Establishing baseline... (${baselineCount}/3)`;
+            return; // exit early — no tracking until baseline complete
+        }
+
+        // ── TRACKING PHASE ──
         const changes = [];
 
         for (const p of players) {
             const prev = previousStats[p.name];
 
-            // First 2 polls are baseline only — never fire alerts on load
-            if (!initialized || !prev) {
+            // New player joined mid-match — record baseline, skip this tick
+            if (!prev) {
                 previousStats[p.name] = { kills: p.kills, deaths: p.deaths };
-                if (liveStreaks[p.name] === undefined) liveStreaks[p.name] = 0;
+                liveStreaks[p.name] = 0;
                 continue;
             }
 
-            const killDelta = p.kills - prev.kills;
+            const killDelta  = p.kills  - prev.kills;
             const deathDelta = p.deaths - prev.deaths;
 
             if (deathDelta > 0) {
@@ -256,12 +286,14 @@ async function poll() {
             }
 
             if (killDelta > 0 && deathDelta > 0) {
+                // Died and got kills in same tick — count kills after respawn
                 liveStreaks[p.name] = killDelta;
                 changes.push(`${p.name} respawned +${killDelta}`);
             }
 
             const currStreak = liveStreaks[p.name] || 0;
 
+            // Fire alert for highest unalerted threshold crossed
             for (const threshold of ALERT_THRESHOLDS) {
                 const key = `${p.name}:${threshold}`;
                 if (currStreak >= threshold && !alreadyAlerted.has(key)) {
@@ -270,15 +302,13 @@ async function poll() {
                     break;
                 }
             }
+
             previousStats[p.name] = { kills: p.kills, deaths: p.deaths };
         }
 
-        if (!initialized) {
-            baselineCount++;
-            if (baselineCount >= 2) initialized = true;
-        }
-        document.getElementById("debugPill").textContent = 
+        document.getElementById("debugPill").textContent =
             changes.length ? changes.slice(0, 4).join(" • ") : "Watching live streaks";
+
     } catch (err) {
         document.getElementById("debugPill").textContent = `Error: ${err.message}`;
     }
