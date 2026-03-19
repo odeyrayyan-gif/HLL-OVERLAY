@@ -20,6 +20,7 @@ UPDATABLE_FILES = [
     "DO_NOT_EDIT_player_spotlight.html",
     "DO_NOT_EDIT_bottom_ticker.html",
     "DO_NOT_EDIT_killstreaks.html",
+    "DO_NOT_EDIT_killfeed.html",
 ]
 
 def get_local_version():
@@ -81,6 +82,19 @@ def check_for_updates():
     if failed:
         print(f"  Failed: {', '.join(failed)}")
 
+    # Show changelog if available
+    try:
+        changelog_url = GITHUB_RAW + "changelog.md?t=" + str(os.times()[4])
+        with urllib.request.urlopen(changelog_url, timeout=5) as r:
+            changelog = r.read().decode().strip()
+        print()
+        print("  ── WHAT'S NEW " + "─" * 40)
+        for line in changelog.split("\n")[:20]:  # show up to 20 lines
+            print(f"  {line}")
+        print("  " + "─" * 54)
+    except:
+        pass
+
     print()
     print("  *** UPDATE COMPLETE — Please close and reopen start.bat ***")
     print()
@@ -137,6 +151,7 @@ class HLLHandler(SimpleHTTPRequestHandler):
             "/rockets.html":                      "/DO_NOT_EDIT_at_leaderboard.html",
             "/spotlight.html":                    "/DO_NOT_EDIT_player_spotlight.html",
             "/kills.html":                        "/DO_NOT_EDIT_killstreaks.html",
+            "/killfeed.html":                     "/DO_NOT_EDIT_killfeed.html",
         }
         if path in LEGACY:
             self.send_response(302)
@@ -210,7 +225,7 @@ class HLLHandler(SimpleHTTPRequestHandler):
             with open(CONFIG_FILE, "r") as f:
                 return json.load(f)
         except:
-            return {"api_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES"}
+            return {"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES"}
 
     def write_config(self, data):
         existing = self.read_config()
@@ -248,7 +263,7 @@ if __name__ == "__main__":
     # Make sure config and player files exist
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "w") as f:
-            json.dump({"api_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES"}, f, indent=2)
+            json.dump({"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES"}, f, indent=2)
     if not os.path.exists(PLAYER_FILE):
         with open(PLAYER_FILE, "w") as f:
             f.write("")
