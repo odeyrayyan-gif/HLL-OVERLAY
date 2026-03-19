@@ -18,7 +18,8 @@ UPDATABLE_FILES = [
     "DO_NOT_EDIT_map_overlay.html",
     "DO_NOT_EDIT_at_leaderboard.html",
     "DO_NOT_EDIT_player_spotlight.html",
-    "DO_NOT_EDIT_bottom_ticker.html",
+    "DO_NOT_EDIT_top5_scroll_banner.html",
+    "DO_NOT_EDIT_top10_scroll_banner.html",
     "DO_NOT_EDIT_killstreaks.html",
     "DO_NOT_EDIT_killfeed.html",
 ]
@@ -84,7 +85,7 @@ def check_for_updates():
 
     # Show changelog if available
     try:
-        changelog_url = GITHUB_RAW + "changelog.txt?t=" + str(os.times()[4])
+        changelog_url = GITHUB_RAW + "changelog.md?t=" + str(os.times()[4])
         with urllib.request.urlopen(changelog_url, timeout=5) as r:
             changelog = r.read().decode().strip()
         print()
@@ -145,7 +146,9 @@ class HLLHandler(SimpleHTTPRequestHandler):
             "/map_team_info_with_deaths.html":    "/DO_NOT_EDIT_map_overlay.html",
             "/player_spotlight.html":             "/DO_NOT_EDIT_player_spotlight.html",
             "/top_rocket_kills.html":             "/DO_NOT_EDIT_at_leaderboard.html",
-            "/top5.html":                         "/DO_NOT_EDIT_bottom_ticker.html",
+            "/top5.html":                         "/DO_NOT_EDIT_top5_scroll_banner.html",
+            "/top10.html":                        "/DO_NOT_EDIT_top10_scroll_banner.html",
+            "/DO_NOT_EDIT_bottom_ticker.html":    "/DO_NOT_EDIT_top5_scroll_banner.html",
             "/team_compare.html":                 "/DO_NOT_EDIT_team_compare.html",
             "/map.html":                          "/DO_NOT_EDIT_map_overlay.html",
             "/rockets.html":                      "/DO_NOT_EDIT_at_leaderboard.html",
