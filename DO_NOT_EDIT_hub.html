@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>HLL COMMAND HUB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --red: #ac2e2e; --red-hot: #ff3c3c; --green: #00ff88;
+            --blue: #00a2ff; --bg: #080b10; --surface: #0d1117;
+            --border: #1e2530; --border-bright: #2e3a48;
+            --text-dim: #4a5568; --text-mid: #718096; --text: #c8d6e5;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Oswald', sans-serif; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 40px 20px 60px; position: relative; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(172,46,46,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(172,46,46,0.03) 1px, transparent 1px);
+            background-size: 40px 40px; pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--red), var(--red-hot), var(--red), transparent);
+            z-index: 10;
+        }
+        .shell { position: relative; z-index: 1; width: 100%; max-width: 860px; }
+
+        .header { text-align: center; margin-bottom: 36px; }
+        .header-eyebrow { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--red); letter-spacing: 6px; text-transform: uppercase; margin-bottom: 10px; opacity: 0.8; }
+        .header h1 { font-size: clamp(32px, 6vw, 52px); font-weight: 700; letter-spacing: 10px; text-transform: uppercase; color: #fff; line-height: 1; text-shadow: 0 0 40px rgba(172,46,46,0.4); }
+        .header h1 span { color: var(--red); }
+        .header-sub { margin-top: 10px; font-size: 12px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; }
+        .header-line { margin: 20px auto 0; width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--red), transparent); }
+
+        .status-bar { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 20px; margin-bottom: 28px; transition: all 0.4s; position: relative; overflow: hidden; }
+        .status-bar::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--red); transition: background 0.4s; }
+        .status-bar.active::before { background: var(--green); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; transition: all 0.4s; }
+        .status-bar.active .status-dot { background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .status-text { font-family: 'Share Tech Mono', monospace; font-size: 12px; letter-spacing: 3px; color: var(--red); text-transform: uppercase; transition: color 0.4s; flex: 1; }
+        .status-bar.active .status-text { color: var(--green); }
+        .status-tag { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); }
+
+        .section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 18px; transition: border-color 0.2s; }
+        .section:hover { border-color: var(--border-bright); }
+        .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .section-num { width: 28px; height: 28px; background: var(--red); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
+        .section-title { font-size: 15px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #fff; }
+        .section-hint { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; font-weight: 300; margin-left: auto; font-style: italic; transition: color 0.3s; }
+
+        input[type="text"] { width: 100%; padding: 13px 16px; background: #070a0f; border: 1px solid var(--border); color: var(--green); border-radius: 6px; font-family: 'Share Tech Mono', monospace; font-size: 13px; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+        input[type="text"]:focus { border-color: var(--red); box-shadow: 0 0 0 2px rgba(172,46,46,0.15); }
+        input[type="text"]::placeholder { color: #2a3040; }
+
+        .toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .toggle-pill { padding: 14px; background: #070a0f; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .toggle-pill:hover { border-color: var(--border-bright); }
+        .toggle-pill.selected-allies { border-color: #3b82f6; background: rgba(59,130,246,0.08); box-shadow: 0 0 20px rgba(59,130,246,0.1); }
+        .toggle-pill.selected-axis { border-color: var(--red); background: rgba(172,46,46,0.08); box-shadow: 0 0 20px rgba(172,46,46,0.1); }
+        .pill-label { font-size: 11px; letter-spacing: 3px; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; }
+        .pill-teams { font-size: 13px; letter-spacing: 2px; font-weight: 600; }
+        .pill-left { color: #3b82f6; }
+        .pill-right { color: var(--red); }
+        .pill-div { color: var(--text-dim); margin: 0 6px; }
+
+        .overlays-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .overlays-title { font-size: 15px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #fff; }
+        .overlays-line { flex: 1; height: 1px; background: var(--border); }
+        .overlays-count { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+        .link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .link-card { background: #070a0f; border: 1px solid var(--border); border-radius: 8px; padding: 16px; transition: all 0.2s; position: relative; overflow: hidden; }
+        .link-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--red); opacity: 0; transition: opacity 0.2s; }
+        .link-card:hover { border-color: var(--border-bright); }
+        .link-card:hover::before { opacity: 1; }
+        .card-icon { font-size: 18px; margin-bottom: 8px; }
+        .card-name { font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #fff; margin-bottom: 6px; }
+        .card-url { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--blue); margin-bottom: 12px; opacity: 0.7; }
+        .copy-btn { width: 100%; background: transparent; color: var(--text-mid); border: 1px solid var(--border); padding: 8px; border-radius: 5px; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .copy-btn:hover { background: var(--red); border-color: var(--red); color: white; }
+        .copy-btn.copied { background: rgba(0,255,136,0.1); border-color: var(--green); color: var(--green); }
+
+        .footer { margin-top: 36px; text-align: center; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; }
+
+        @media (max-width: 580px) { .link-grid { grid-template-columns: 1fr; } .toggle-group { grid-template-columns: 1fr; } }
+
+        /* ── INPUT LABELS ── */
+        .input-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px; letter-spacing: 2px; color: var(--text-dim);
+            text-transform: uppercase; margin-bottom: 6px; display: block;
+        }
+        .input-label span { color: var(--text-mid); }
+        .input-group { margin-bottom: 10px; }
+        .input-group:last-child { margin-bottom: 0; }
+
+        /* ── SAVED SERVERS ── */
+        .server-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+        .server-select {
+            flex: 1; padding: 11px 14px; background: #070a0f;
+            border: 1px solid var(--border); color: var(--text);
+            border-radius: 6px; font-family: 'Oswald', sans-serif;
+            font-size: 13px; outline: none; cursor: pointer;
+            appearance: none; transition: border-color 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ac2e2e' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+        }
+        .server-select:focus { border-color: var(--red); }
+        .server-btn {
+            padding: 11px 14px; background: transparent; border: 1px solid var(--border);
+            color: var(--text-mid); border-radius: 6px; font-family: 'Oswald', sans-serif;
+            font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+            cursor: pointer; white-space: nowrap; transition: all 0.2s; font-weight: 600;
+        }
+        .server-btn:hover { background: var(--red); border-color: var(--red); color: white; }
+        .server-btn.green:hover { background: rgba(0,255,136,0.15); border-color: var(--green); color: var(--green); }
+        .server-name-row { display: flex; gap: 8px; margin-top: 8px; }
+        .server-name-input {
+            flex: 1; padding: 10px 14px; background: #070a0f;
+            border: 1px solid var(--border); color: var(--text-mid);
+            border-radius: 6px; font-family: 'Share Tech Mono', monospace;
+            font-size: 12px; outline: none; transition: border-color 0.2s;
+        }
+        .server-name-input:focus { border-color: var(--red); }
+        .server-name-input::placeholder { color: #2a3040; }
+
+        /* Faction selector */
+        .faction-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+        .faction-pill { padding: 10px 14px; background: #070a0f; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .faction-pill:hover { border-color: var(--border-bright); }
+        .faction-pill.selected-allied { border-color: #3b82f6; background: rgba(59,130,246,0.1); }
+        .faction-pill.selected-axis   { border-color: var(--red); background: rgba(172,46,46,0.1); }
+        .faction-name  { font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+        .faction-sub   { font-size: 9px; letter-spacing: 1px; color: var(--text-dim); margin-top: 3px; text-transform: uppercase; }
+        .faction-divider { grid-column: 1 / span 2; display: flex; align-items: center; gap: 10px; margin: 4px 0; }
+        .faction-divider-line { flex: 1; height: 1px; background: var(--border); }
+        .faction-divider-text { font-size: 10px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
+
+        /* ── PHONE MODE ── */
+        .phone-mode { display: none; }
+        @media (max-width: 600px) {
+            .shell { display: none !important; }
+            .phone-mode { display: flex !important; }
+        }
+        body.is-phone .shell { display: none !important; }
+        body.is-phone .phone-mode {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 20px 16px 40px;
+            gap: 16px;
+        }
+
+        .phone-header { text-align: center; margin-bottom: 8px; }
+        .phone-header h2 { font-size: 24px; font-weight: 700; letter-spacing: 6px; color: #fff; text-transform: uppercase; }
+        .phone-header h2 span { color: var(--red); }
+        .phone-header p { font-size: 10px; color: var(--text-dim); letter-spacing: 3px; margin-top: 6px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
+
+        .phone-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; }
+        .phone-label { font-size: 11px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .phone-label-num { width: 22px; height: 22px; background: var(--red); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
+        .phone-hint { font-size: 10px; color: var(--text-dim); font-style: italic; margin-left: auto; font-family: 'Share Tech Mono', monospace; transition: color 0.3s; }
+
+        .phone-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .phone-pill { padding: 16px 10px; background: #070a0f; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+        .phone-pill.selected-allies { border-color: #3b82f6; background: rgba(59,130,246,0.08); box-shadow: 0 0 20px rgba(59,130,246,0.1); }
+        .phone-pill.selected-axis { border-color: var(--red); background: rgba(172,46,46,0.08); box-shadow: 0 0 20px rgba(172,46,46,0.1); }
+        .phone-pill-label { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
+        .phone-pill-teams { font-size: 15px; letter-spacing: 2px; font-weight: 700; }
+
+        .phone-input { width: 100%; padding: 16px; background: #070a0f; border: 1px solid var(--border); color: var(--green); border-radius: 8px; font-family: 'Share Tech Mono', monospace; font-size: 16px; outline: none; transition: border-color 0.2s; -webkit-appearance: none; }
+        .phone-input:focus { border-color: var(--red); }
+        .phone-input::placeholder { color: #2a3040; }
+
+        .phone-clear { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--border); color: var(--text-mid); border-radius: 8px; font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 8px; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+        .phone-clear:active { background: var(--red); border-color: var(--red); color: white; }
+
+        .phone-status { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; width: 100%; display: flex; align-items: center; gap: 10px; }
+        .phone-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+        .phone-status-dot.live { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+        .phone-status-text { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+    </style>
+</head>
+<body>
+<div class="shell">
+
+    <div class="header">
+        <div class="header-eyebrow">Hell Let Loose · Overlay System</div>
+        <h1>HLL <span>COMMAND</span> HUB</h1>
+        <div class="header-sub">Local Server · v3.0</div>
+        <div class="header-line"></div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+        <div class="status-dot"></div>
+        <div class="status-text" id="statusText">AWAITING LIVE API...</div>
+        <div class="status-tag" id="statusTag">NO SIGNAL</div>
+    </div>
+
+    <!-- 1: API URL -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">1</div>
+            <div class="section-title">Match API URL</div>
+            <div class="section-hint" id="apiHint">Saved instantly to all overlays</div>
+        </div>
+
+        <!-- Saved servers dropdown -->
+        <div class="server-row">
+            <select class="server-select" id="serverSelect" onchange="onServerSelect()">
+                <option value="">— Saved Servers —</option>
+            </select>
+            <button class="server-btn green" onclick="saveServer()" title="Save current URL as a named server">💾 Save</button>
+            <button class="server-btn" onclick="deleteServer()" title="Delete selected server">✕</button>
+        </div>
+
+        <!-- URL input -->
+        <label class="input-label">Find via F12 → Network tab → filter "get_live_game_stats" → copy the Request URL</label>
+        <input type="text" id="api" placeholder="http://YOUR-SERVER-IP:PORT/api/get_live_game_stats" oninput="onApiInput()">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);margin-top:7px;letter-spacing:1px;">
+            SELECT a server to load it &nbsp;·&nbsp; EDIT the URL then 💾 Save to update it &nbsp;·&nbsp; ✕ to delete selected
+        </div>
+
+        <!-- Name input (shown when saving) -->
+        <div class="server-name-row" id="saveNameRow" style="display:none;">
+            <input type="text" class="server-name-input" id="serverName" placeholder="Give this server a name (e.g. EU Match Server)">
+            <button class="server-btn green" onclick="confirmSaveServer()">✓ Confirm</button>
+            <button class="server-btn" onclick="cancelSaveServer()">✕</button>
+        </div>
+    </div>
+
+    <!-- 2: TEAM SWAP -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">2</div>
+            <div class="section-title">Team Side Alignment</div>
+            <div class="section-hint" id="swapHint">Blue = left · Red = right · always</div>
+        </div>
+        <div class="toggle-group">
+            <div class="toggle-pill selected-allies" id="pill-standard" onclick="setSwap(false)">
+                <div class="pill-label">Standard</div>
+                <div class="pill-teams">
+                    <span class="pill-left">ALLIES</span>
+                    <span class="pill-div">·</span>
+                    <span class="pill-right">AXIS</span>
+                </div>
+            </div>
+            <div class="toggle-pill" id="pill-swapped" onclick="setSwap(true)">
+                <div class="pill-label">Swapped</div>
+                <div class="pill-teams">
+                    <span class="pill-left">AXIS</span>
+                    <span class="pill-div">·</span>
+                    <span class="pill-right">ALLIES</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3: FACTION SELECTOR -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">3</div>
+            <div class="section-title">Faction Selection</div>
+            <div class="section-hint" id="factionHint">Replaces labels in all overlays</div>
+        </div>
+        <div class="faction-group">
+            <!-- Allies side -->
+            <div class="faction-pill selected-allied" id="faction-us" onclick="setFaction('US ARMY')">
+                <div class="faction-name" style="color:#3b82f6">US ARMY</div>
+                <div class="faction-sub">Allied · United States</div>
+            </div>
+            <div class="faction-pill" id="faction-british" onclick="setFaction('BRITISH')">
+                <div class="faction-name" style="color:#3b82f6">BRITISH</div>
+                <div class="faction-sub">Allied · United Kingdom</div>
+            </div>
+            <div class="faction-pill" id="faction-soviet" onclick="setFaction('SOVIETS')">
+                <div class="faction-name" style="color:#3b82f6">SOVIETS</div>
+                <div class="faction-sub">Allied · Soviet Union</div>
+            </div>
+            <!-- Divider -->
+            <div class="faction-divider">
+                <div class="faction-divider-line"></div>
+                <div class="faction-divider-text">vs</div>
+                <div class="faction-divider-line"></div>
+            </div>
+            <!-- Axis — always Germany -->
+            <div class="faction-pill selected-axis" id="faction-germany" style="grid-column: 1 / span 2; pointer-events: none;">
+                <div class="faction-name" style="color:var(--red)">GERMANY</div>
+                <div class="faction-sub">Axis · Wehrmacht / always</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4: SPOTLIGHT -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">4</div>
+            <div class="section-title">Spotlight Player</div>
+            <div class="section-hint" id="spotlightHint">Updates overlay within 3 seconds</div>
+        </div>
+        <input type="text" id="player" placeholder="Type part of a player name..." oninput="onPlayerInput()">
+    </div>
+
+    <!-- OBS LINKS -->
+    <div class="section">
+        <div class="overlays-header">
+            <div class="overlays-title">OBS Browser Sources</div>
+            <div class="overlays-line"></div>
+            <div class="overlays-count">9 OVERLAYS</div>
+        </div>
+        <div class="link-grid" id="output"></div>
+    </div>
+
+    <div class="footer">HLL Command Hub · All config syncs instantly via local server</div>
+</div>
+
+<!-- ── PHONE MODE (auto-shown on small screens) ── -->
+<div class="phone-mode">
+    <div class="phone-header">
+        <h2>HLL <span>HUB</span></h2>
+        <p>Broadcast Control · Phone View</p>
+    </div>
+
+    <div class="phone-status">
+        <div class="phone-status-dot" id="phoneDot"></div>
+        <div class="phone-status-text" id="phoneStatus">Loading...</div>
+    </div>
+
+    <div class="phone-card">
+        <div class="phone-label">
+            <div class="phone-label-num">1</div>
+            Allied Faction
+            <span class="phone-hint" id="phoneFactionHint">tap to select</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px;">
+            <div class="phone-pill" id="phone-faction-us" onclick="phoneSetFaction('US ARMY')" style="padding:10px 6px;">
+                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">US ARMY</div>
+            </div>
+            <div class="phone-pill" id="phone-faction-british" onclick="phoneSetFaction('BRITISH')" style="padding:10px 6px;">
+                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">BRITISH</div>
+            </div>
+            <div class="phone-pill" id="phone-faction-soviet" onclick="phoneSetFaction('SOVIETS')" style="padding:10px 6px;">
+                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">SOVIETS</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="phone-card">
+        <div class="phone-label">
+            <div class="phone-label-num">2</div>
+            Team Side Alignment
+            <span class="phone-hint" id="phoneSwapHint">tap to change</span>
+        </div>
+        <div class="phone-toggle">
+            <div class="phone-pill selected-allies" id="phone-pill-standard" onclick="phoneSetSwap(false)">
+                <div class="phone-pill-label">Standard</div>
+                <div class="phone-pill-teams">
+                    <span style="color:#3b82f6">ALLIES</span>
+                    <span style="color:var(--text-dim)"> · </span>
+                    <span style="color:var(--red)">AXIS</span>
+                </div>
+            </div>
+            <div class="phone-pill" id="phone-pill-swapped" onclick="phoneSetSwap(true)">
+                <div class="phone-pill-label">Swapped</div>
+                <div class="phone-pill-teams">
+                    <span style="color:#3b82f6">AXIS</span>
+                    <span style="color:var(--text-dim)"> · </span>
+                    <span style="color:var(--red)">ALLIES</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="phone-card">
+        <div class="phone-label">
+            <div class="phone-label-num">3</div>
+            Spotlight Player
+            <span class="phone-hint" id="phoneSpotlightHint">type to search</span>
+        </div>
+        <input type="text" class="phone-input" id="phone-player"
+            placeholder="Part of player name..."
+            oninput="onPhonePlayerInput()"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button class="phone-clear" onclick="clearPhonePlayer()">✕ Clear — Show Top Killer</button>
+    </div>
+</div>
+
+<script>
+    // Use the same host that served this page — works from PC (localhost) and phone (192.168.x.x)
+    const SERVER = `http://${window.location.hostname}:3000`;
+
+    const VIEWS = [
+        { n: "Team Comparison",   f: "DO_NOT_EDIT_team_compare.html",              icon: "⚔️"  },
+        { n: "AT Leaderboard",    f: "DO_NOT_EDIT_at_leaderboard.html",          icon: "🚀"  },
+        { n: "Player Spotlight",  f: "DO_NOT_EDIT_player_spotlight.html",          icon: "🎯"  },
+        { n: "Top 5 Scroll Banner",  f: "DO_NOT_EDIT_top5_scroll_banner.html",  icon: "📊"  },
+        { n: "Top 10 Scroll Banner", f: "DO_NOT_EDIT_top10_scroll_banner.html", icon: "📋"  },
+        { n: "Live Map",          f: "DO_NOT_EDIT_map_overlay.html", icon: "🗺️" },
+        { n: "Kill Streaks",      f: "DO_NOT_EDIT_killstreaks.html",               icon: "💀"  },
+        { n: "Kill Feed",          f: "DO_NOT_EDIT_killfeed.html",                  icon: "🎯"  },
+        { n: "Tank Scoreboard",    f: "DO_NOT_EDIT_tank_scoreboard.html",            icon: "🛡️"  }
+    ];
+
+    let saveTimer = null;
+    let currentSwap = false;
+
+    // ── Write config to local server ──
+    async function saveConfig(hintId) {
+        const hint = document.getElementById(hintId);
+        hint.textContent = 'SAVING...';
+        hint.style.color = 'var(--text-mid)';
+        try {
+            const res = await fetch(`${SERVER}/config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    api_endpoint: document.getElementById('api').value.trim(),
+                    swap_sides:   currentSwap
+                })
+            });
+            const json = await res.json();
+            if (!json.ok) throw new Error();
+            hint.textContent = '✓ SAVED';
+            hint.style.color = 'var(--green)';
+            setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = ''; }, 2000);
+        } catch(e) {
+            hint.textContent = 'SAVE FAILED — is DO_NOT_EDIT_server.py running?';
+            hint.style.color = '#ff3c3c';
+        }
+    }
+
+    // ── Write player name to server ──
+    async function savePlayer(hintId) {
+        const hint = document.getElementById(hintId);
+        hint.textContent = 'SAVING...';
+        hint.style.color = 'var(--text-mid)';
+        try {
+            const res = await fetch(`${SERVER}/player`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ player: document.getElementById('player').value.trim() })
+            });
+            const json = await res.json();
+            if (!json.ok) throw new Error();
+            hint.textContent = '✓ SAVED';
+            hint.style.color = 'var(--green)';
+            setTimeout(() => { hint.textContent = 'Updates overlay within 3 seconds'; hint.style.color = ''; }, 2000);
+        } catch(e) {
+            hint.textContent = 'SAVE FAILED — is DO_NOT_EDIT_server.py running?';
+            hint.style.color = '#ff3c3c';
+        }
+    }
+
+    // ── Faction selector ──
+    const ALLIED_FACTIONS = ['US ARMY', 'BRITISH', 'SOVIETS'];
+    let currentFaction = 'US ARMY';
+
+    function setFaction(name) {
+        currentFaction = name;
+        updateFactionPills(name);
+        const hint = document.getElementById('factionHint');
+        hint.textContent = 'saving...'; hint.style.color = 'var(--text-mid)';
+        fetch(`${SERVER}/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ allied_faction: name })
+        }).then(() => {
+            hint.textContent = '✓ saved — overlays updated';
+            hint.style.color = 'var(--green)';
+            setTimeout(() => { hint.textContent = 'Replaces labels in all overlays'; hint.style.color = ''; }, 2000);
+        }).catch(() => {
+            hint.textContent = 'SAVE FAILED';
+            hint.style.color = '#ff3c3c';
+        });
+    }
+
+    function updateFactionPills(name) {
+        ALLIED_FACTIONS.forEach(f => {
+            const id = 'faction-' + f.toLowerCase().replace(' army','').replace(' ','').replace('soviets','soviet');
+            const el = document.getElementById(id);
+            if (el) el.className = 'faction-pill' + (f === name ? ' selected-allied' : '');
+        });
+    }
+
+    // ── SAVED SERVERS ──
+    // Stored in localStorage as an array of {name, url} objects
+    function getSavedServers() {
+        try { return JSON.parse(localStorage.getItem('hll_saved_servers') || '[]'); }
+        catch(e) { return []; }
+    }
+
+    function setSavedServers(servers) {
+        localStorage.setItem('hll_saved_servers', JSON.stringify(servers));
+    }
+
+    function renderServerDropdown(selectUrl) {
+        const servers = getSavedServers();
+        const sel = document.getElementById('serverSelect');
+        sel.innerHTML = '<option value="">— Saved Servers —</option>';
+        servers.forEach((s, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = s.name;
+            if (s.url === selectUrl) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    }
+
+    function onServerSelect() {
+        const sel = document.getElementById('serverSelect');
+        if (!sel.value && sel.value !== 0) return;
+        const servers = getSavedServers();
+        const server = servers[parseInt(sel.value)];
+        if (!server) return;
+        document.getElementById('api').value = server.url;
+        onApiInput();
+    }
+
+    function saveServer() {
+        const url = document.getElementById('api').value.trim();
+        if (!url) {
+            const hint = document.getElementById('apiHint');
+            hint.textContent = 'Paste a URL first'; hint.style.color = '#ff3c3c';
+            setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = ''; }, 2000);
+            return;
+        }
+        document.getElementById('serverName').value = '';
+        document.getElementById('saveNameRow').style.display = 'flex';
+        document.getElementById('serverName').focus();
+    }
+
+    function confirmSaveServer() {
+        const url  = document.getElementById('api').value.trim();
+        const name = document.getElementById('serverName').value.trim();
+        if (!name) { document.getElementById('serverName').focus(); return; }
+        const servers = getSavedServers();
+        const existing = servers.findIndex(s => s.url === url);
+        if (existing >= 0) { servers[existing].name = name; }
+        else { servers.push({ name, url }); }
+        setSavedServers(servers);
+        renderServerDropdown(url);
+        cancelSaveServer();
+        const hint = document.getElementById('apiHint');
+        hint.textContent = `✓ Saved as "${name}"`; hint.style.color = 'var(--green)';
+        setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = ''; }, 2500);
+    }
+
+    function cancelSaveServer() {
+        document.getElementById('saveNameRow').style.display = 'none';
+        document.getElementById('serverName').value = '';
+    }
+
+    function deleteServer() {
+        const sel = document.getElementById('serverSelect');
+        if (!sel.value && sel.value !== 0) return;
+        const idx = parseInt(sel.value);
+        const servers = getSavedServers();
+        const name = servers[idx]?.name || 'server';
+        servers.splice(idx, 1);
+        setSavedServers(servers);
+        renderServerDropdown('');
+        const hint = document.getElementById('apiHint');
+        hint.textContent = `"${name}" removed`; hint.style.color = 'var(--text-mid)';
+        setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = ''; }, 2000);
+    }
+
+    function onApiInput() {
+        updateStatus(document.getElementById('api').value.trim());
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => saveConfig('apiHint'), 600);
+    }
+
+    function setSwap(val) {
+        currentSwap = val;
+        document.getElementById('pill-standard').className = 'toggle-pill' + (!val ? ' selected-allies' : '');
+        document.getElementById('pill-swapped').className  = 'toggle-pill' + ( val ? ' selected-axis'  : '');
+        saveConfig('swapHint');
+    }
+
+    function onPlayerInput() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => savePlayer('spotlightHint'), 150);
+    }
+
+    function updateStatus(apiVal) {
+        const bar  = document.getElementById('statusBar');
+        const text = document.getElementById('statusText');
+        const tag  = document.getElementById('statusTag');
+        if (apiVal) {
+            bar.classList.add('active');
+            text.textContent = 'SIGNAL ACTIVE — OVERLAYS SYNCED';
+            tag.textContent  = 'LIVE';
+        } else {
+            bar.classList.remove('active');
+            text.textContent = 'AWAITING LIVE API...';
+            tag.textContent  = 'NO SIGNAL';
+        }
+    }
+
+    function renderLinks() {
+        document.getElementById('output').innerHTML = VIEWS.map(v => {
+            const url = `${SERVER}/${v.f}`;
+            return `
+            <div class="link-card">
+                <div class="card-icon">${v.icon}</div>
+                <div class="card-name">${v.n}</div>
+                <div class="card-url">${url}</div>
+                <button class="copy-btn" onclick="copyUrl(this, '${url}')">Copy OBS URL</button>
+            </div>`;
+        }).join('');
+    }
+
+    function copyUrl(btn, url) {
+        navigator.clipboard.writeText(url).then(() => {
+            btn.textContent = '✓ Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'Copy OBS URL'; btn.classList.remove('copied'); }, 2000);
+        });
+    }
+
+    // ── Load saved config from server on startup ──
+    async function loadConfig() {
+        try {
+            const res  = await fetch(`${SERVER}/config`);
+            const data = await res.json();
+            document.getElementById('api').value    = data.api_endpoint || '';
+            document.getElementById('player').value = data.player       || '';
+            currentSwap = data.swap_sides === true;
+            document.getElementById('pill-standard').className = 'toggle-pill' + (!currentSwap ? ' selected-allies' : '');
+            document.getElementById('pill-swapped').className  = 'toggle-pill' + ( currentSwap ? ' selected-axis'  : '');
+            updateStatus(data.api_endpoint || '');
+            renderServerDropdown(data.api_endpoint || '');
+            if (data.allied_faction) { currentFaction = data.allied_faction; updateFactionPills(data.allied_faction); updatePhoneFactionPills(data.allied_faction); }
+        } catch(e) {
+            document.getElementById('statusText').textContent = 'SERVER OFFLINE — Run start.bat first!';
+            document.getElementById('statusTag').textContent  = 'OFFLINE';
+        }
+        renderLinks();
+    }
+
+    loadConfig();
+
+    // ── PHONE / DESKTOP MODE DETECTION ──
+    function applyLayout() {
+        const isPhone = window.innerWidth <= 600;
+        document.body.classList.toggle('is-phone', isPhone);
+    }
+    applyLayout();
+    window.addEventListener('resize', applyLayout);
+
+    // ── PHONE MODE JS ──
+    let phoneTimer = null;
+
+    function phoneSetFaction(name) {
+        currentFaction = name;
+        updateFactionPills(name);
+        updatePhoneFactionPills(name);
+        const hint = document.getElementById('phoneFactionHint');
+        hint.textContent = 'saving...'; hint.style.color = 'var(--text-mid)';
+        fetch(`${SERVER}/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ allied_faction: name })
+        }).then(() => {
+            hint.textContent = '✓ saved'; hint.style.color = 'var(--green)';
+            setTimeout(() => { hint.textContent = 'tap to select'; hint.style.color = ''; }, 2000);
+        });
+    }
+
+    function updatePhoneFactionPills(name) {
+        ['us', 'british', 'soviet'].forEach(id => {
+            const el = document.getElementById('phone-faction-' + id);
+            if (el) el.className = 'phone-pill' + (
+                (id === 'us' && name === 'US ARMY') ||
+                (id === 'british' && name === 'BRITISH') ||
+                (id === 'soviet' && name === 'SOVIETS')
+                ? ' selected-allies' : ''
+            );
+        });
+    }
+
+    function phoneSetSwap(val) {
+        currentSwap = val;
+        // Sync desktop pills too
+        document.getElementById('pill-standard').className = 'toggle-pill' + (!val ? ' selected-allies' : '');
+        document.getElementById('pill-swapped').className  = 'toggle-pill' + ( val ? ' selected-axis'  : '');
+        document.getElementById('phone-pill-standard').className = 'phone-pill' + (!val ? ' selected-allies' : '');
+        document.getElementById('phone-pill-swapped').className  = 'phone-pill' + ( val ? ' selected-axis'  : '');
+        const hint = document.getElementById('phoneSwapHint');
+        hint.textContent = 'saving...'; hint.style.color = 'var(--text-mid)';
+        saveConfig('swapHint').then(() => {
+            hint.textContent = '✓ saved'; hint.style.color = 'var(--green)';
+            setTimeout(() => { hint.textContent = 'tap to change'; hint.style.color = ''; }, 2000);
+        });
+    }
+
+    function onPhonePlayerInput() {
+        // Keep desktop input in sync
+        document.getElementById('player').value = document.getElementById('phone-player').value;
+        clearTimeout(phoneTimer);
+        phoneTimer = setTimeout(async () => {
+            const hint = document.getElementById('phoneSpotlightHint');
+            hint.textContent = 'saving...'; hint.style.color = 'var(--text-mid)';
+            await savePlayer('spotlightHint');
+            hint.textContent = '✓ saved'; hint.style.color = 'var(--green)';
+            setTimeout(() => { hint.textContent = 'type to search'; hint.style.color = ''; }, 2000);
+        }, 150);
+    }
+
+    async function clearPhonePlayer() {
+        document.getElementById('phone-player').value = '';
+        document.getElementById('player').value = '';
+        const hint = document.getElementById('phoneSpotlightHint');
+        hint.textContent = 'clearing...'; hint.style.color = 'var(--text-mid)';
+        await savePlayer('spotlightHint');
+        hint.textContent = '✓ cleared'; hint.style.color = 'var(--green)';
+        setTimeout(() => { hint.textContent = 'type to search'; hint.style.color = ''; }, 2000);
+    }
+
+    // Keep phone UI in sync with server state
+    // ── Universal sync — keeps BOTH desktop and phone UI in sync with server ──
+    // Runs every 2s on all devices. Changes made on phone show on PC and vice versa.
+    async function syncAllUI() {
+        try {
+            const res  = await fetch(`${SERVER}/config?t=` + Date.now(), { cache: "no-store" });
+            const data = await res.json();
+            const swap = data.swap_sides === true;
+
+            // ── Sync desktop swap pills (skip if user is actively clicking) ──
+            if (document.activeElement?.tagName !== 'BUTTON') {
+                currentSwap = swap;
+                document.getElementById('pill-standard').className = 'toggle-pill' + (!swap ? ' selected-allies' : '');
+                document.getElementById('pill-swapped').className  = 'toggle-pill' + ( swap ? ' selected-axis'  : '');
+            }
+            // ── Sync faction pills ──
+            if (data.allied_faction && data.allied_faction !== currentFaction) {
+                currentFaction = data.allied_faction;
+                updateFactionPills(data.allied_faction);
+                updatePhoneFactionPills(data.allied_faction);
+            }
+
+            // ── Sync desktop player input (skip if user is actively typing) ──
+            const desktopInput = document.getElementById('player');
+            if (document.activeElement !== desktopInput) {
+                desktopInput.value = data.player || '';
+            }
+
+
+            // ── Sync desktop status bar ──
+            updateStatus(data.api_endpoint || '');
+
+            // ── Sync phone swap pills ──
+            const phonePillStd = document.getElementById('phone-pill-standard');
+            const phonePillSwp = document.getElementById('phone-pill-swapped');
+            if (phonePillStd) {
+                phonePillStd.className = 'phone-pill' + (!swap ? ' selected-allies' : '');
+                phonePillSwp.className = 'phone-pill' + ( swap ? ' selected-axis'  : '');
+            }
+
+            // ── Sync phone player input (skip if user is actively typing) ──
+            const phoneInput = document.getElementById('phone-player');
+            if (phoneInput && document.activeElement !== phoneInput) {
+                phoneInput.value = data.player || '';
+            }
+
+            // ── Phone status bar ──
+            const dot    = document.getElementById('phoneDot');
+            const status = document.getElementById('phoneStatus');
+            if (dot && status) {
+                if (data.api_endpoint) {
+                    dot.className      = 'phone-status-dot live';
+                    status.textContent = 'LIVE · ' + data.api_endpoint.split('/').pop();
+                } else {
+                    dot.className      = 'phone-status-dot';
+                    status.textContent = 'NO API — set it on your PC first';
+                }
+            }
+
+        } catch(e) {
+            const s = document.getElementById('phoneStatus');
+            if (s) s.textContent = 'SERVER OFFLINE';
+        }
+    }
+
+    // Sync all UI every 2 seconds on every device
+    syncAllUI();
+    setInterval(syncAllUI, 2000);
+</script>
+</body>
+</html>
