@@ -251,23 +251,73 @@
 
     function detectTankType(p) {
         if (!p.weapons) return "Unknown";
-        const wKeys = Object.keys(p.weapons).join(" ").toLowerCase();
+
+        // First pass: check TANK_WEAPONS lookup table (most accurate)
+        const wAll = Object.keys(p.weapons).join(" ").toLowerCase();
         for (const t of TANK_WEAPONS) {
-            if (wKeys.includes(t.key)) return t.name;
+            if (wAll.includes(t.key)) return t.name;
         }
-        // Fallback — find any weapon with vehicle-related keyword
+
+        // Second pass: extract vehicle name from brackets e.g. "COAXIAL M1919 [M4A3 Sherman]"
         for (const name of Object.keys(p.weapons)) {
-            const n = name.toLowerCase();
-            if (n.includes("mm") || n.includes("cannon") || n.includes("tank")) {
-                return name.replace(/_/g, " ").substring(0, 14);
+            const match = name.match(/\[([^\]]+)\]/);
+            if (match) {
+                // Got a bracketed vehicle name — clean it up
+                const vName = match[1].trim();
+                // Skip if it looks like a model number only (e.g. "[75mm]")
+                if (!/^\d+mm$/i.test(vName)) return vName.substring(0, 16);
             }
         }
-        return "Tank";
+
+        // Third pass: look for known vehicle names anywhere in weapon strings
+        const VEHICLE_NAMES = [
+            "tiger","panther","panzer","sherman","stuart","firefly",
+            "puma","lux","marder","halftrack","greyhound","is-2","t-34"
+        ];
+        for (const name of Object.keys(p.weapons)) {
+            const nl = name.toLowerCase();
+            for (const v of VEHICLE_NAMES) {
+                if (nl.includes(v)) return v.charAt(0).toUpperCase() + v.slice(1);
+            }
+        }
+
+        // Final fallback — use coaxial weapon type to hint the vehicle class
+        if (wAll.includes("coaxial")) return "Tank (Coaxial)";
+        return "Unknown";
     }
 
+    // Words that confirm it's a tank weapon
+    const ARMOR_KEYWORDS = [
+        "panzer", "tiger", "panther", "sherman", "stuart",
+        "firefly", "puma", "lux", "marder", "halftrack", "greyhound",
+        "is-2", "is2", "t-34", "t34", "coaxial", "kwk",
+        "17pdr", "17 pounder", "hull mg", "besa",
+        "m4a3", "m4a1", "m5a1", "m8a1"
+    ];
+
+    // Words that mean it's ARTILLERY — never show these as armor
+    const ARTILLERY_KEYWORDS = [
+        "howitzer", "artillery", "lefh", "155mm", "105mm",
+        "m114", "m2a1", "mlrs", "katyusha", "pak 43",
+        "zis-3", "zis3"
+    ];
+
     function isArmorCrew(p) {
-        // Show anyone with at least 1 vehicle kill
-        return (p.v_kills || 0) >= 1;
+        if (!p.weapons) return false;
+        const weaponNames = Object.keys(p.weapons);
+        const wAll = weaponNames.join(" ").toLowerCase();
+
+        // Hard exclude if any weapon is artillery
+        if (ARTILLERY_KEYWORDS.some(k => wAll.includes(k))) return false;
+
+        // Anyone with vehicle kills qualifies
+        if ((p.v_kills || 0) > 0) return true;
+
+        // Check each weapon for armor keywords
+        return weaponNames.some(w => {
+            const wl = w.toLowerCase();
+            return ARMOR_KEYWORDS.some(k => wl.includes(k));
+        });
     }
 
     function renderPanel(contentId, titleId, footerId, crews, color, factionName) {
@@ -287,7 +337,8 @@
                 <span>#</span>
                 <span>Crew</span>
                 <span>Tank</span>
-                <span>V.Kills</span>
+                <span>V.KLS</span>
+                <span>INF</span>
                 <span>K/D</span>
             </div>`;
 
@@ -305,6 +356,10 @@
                 <div class="cr-stat">
                     <div class="cr-val">${p.v_kills || 0}</div>
                     <div class="cr-label">V.KLS</div>
+                </div>
+                <div class="cr-stat">
+                    <div class="cr-val">${kills}</div>
+                    <div class="cr-label">INF</div>
                 </div>
                 <div class="cr-stat">
                     <div class="cr-val">${kd}</div>
@@ -360,11 +415,11 @@
             const allCrew = players.filter(p => isArmorCrew(p));
             const leftCrew  = allCrew
                 .filter(p => identifyTeam(p) === leftFaction)
-                .sort((a, b) => (b.v_kills || 0) - (a.v_kills || 0))
+                .sort((a, b) => Number(b.kills || 0) - Number(a.kills || 0))
                 .slice(0, 8);
             const rightCrew = allCrew
                 .filter(p => identifyTeam(p) === rightFaction)
-                .sort((a, b) => (b.v_kills || 0) - (a.v_kills || 0))
+                .sort((a, b) => Number(b.kills || 0) - Number(a.kills || 0))
                 .slice(0, 8);
 
             renderPanel("left-content",  "left-title",  "left-footer",  leftCrew,  leftColor,  leftName);

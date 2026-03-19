@@ -1,7 +1,7 @@
 {
-  "api_endpoint": "https://scoreboard-us-east-1.glows.gg/api/get_live_game_stats",
+  "api_endpoint": "",
   "swap_sides": false,
   "player": "",
-  "allied_faction": "US ARMY",
+  "allied_faction": "ALLIES",
   "api_logs_endpoint": ""
 }

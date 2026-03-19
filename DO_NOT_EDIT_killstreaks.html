@@ -161,14 +161,28 @@ async function getEndpoint() {
     } catch { return ""; }
 }
 
+const ARTY_EXCLUSIONS = [
+    "howitzer", "artillery", "150mm", "155mm", "105mm", "lefh", "sfh",
+    "katyusha", "mlrs", "zis-3", "zis3"
+];
+
+function isArtillery(p) {
+    if (!p.weapons) return false;
+    return Object.keys(p.weapons).some(w =>
+        ARTY_EXCLUSIONS.some(k => w.toLowerCase().includes(k))
+    );
+}
+
 function getPlayers(data) {
     const stats = data?.result?.stats;
     if (!Array.isArray(stats)) return [];
-    return stats.map(p => ({
-        name: p.player || "Unknown",
-        kills: Number(p.kills || 0),
-        deaths: Number(p.deaths || 0)
-    }));
+    return stats
+        .filter(p => !isArtillery(p))
+        .map(p => ({
+            name: p.player || "Unknown",
+            kills: Number(p.kills || 0),
+            deaths: Number(p.deaths || 0)
+        }));
 }
 
 function getTierClass(streak) {
