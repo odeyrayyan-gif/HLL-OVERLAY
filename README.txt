@@ -292,7 +292,11 @@ Use these exact Width and Height values:
   ├────────────────────────────────────┼──────────┼──────────┤
   │ Kill Streak Alerts                 │  1920 px │  1080 px │
   │ DO_NOT_EDIT_killstreaks.html       │          │          │
-  └────────────────────────────────────┴──────────┴──────────┘
+  └────────────────────────────────────
+  ├────────────────────────────────────┼──────────┼──────────┤
+  │ Kill Feed                          │  1920 px │  1080 px │
+  │ DO_NOT_EDIT_killfeed.html          │          │          │
+  └────────────────────────────────────┴──────────┴──────────┘┴──────────┴──────────┘
 
 WHY ARE TEAM COMPARISON AND AT LEADERBOARD 4K?
   They are built on a 4K canvas so they stay sharp when

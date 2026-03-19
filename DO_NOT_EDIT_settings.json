@@ -2,5 +2,6 @@
   "api_endpoint": "",
   "swap_sides": false,
   "player": "",
-  "allied_faction": "ALLIES"
+  "allied_faction": "ALLIES",
+  "api_logs_endpoint": ""
 }
