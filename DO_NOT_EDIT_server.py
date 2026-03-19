@@ -84,7 +84,7 @@ def check_for_updates():
 
     # Show changelog if available
     try:
-        changelog_url = GITHUB_RAW + "changelog.md?t=" + str(os.times()[4])
+        changelog_url = GITHUB_RAW + "changelog.txt?t=" + str(os.times()[4])
         with urllib.request.urlopen(changelog_url, timeout=5) as r:
             changelog = r.read().decode().strip()
         print()

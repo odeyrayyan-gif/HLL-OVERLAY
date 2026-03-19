@@ -93,6 +93,16 @@
 
         @media (max-width: 580px) { .link-grid { grid-template-columns: 1fr; } .toggle-group { grid-template-columns: 1fr; } }
 
+        /* ── INPUT LABELS ── */
+        .input-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px; letter-spacing: 2px; color: var(--text-dim);
+            text-transform: uppercase; margin-bottom: 6px; display: block;
+        }
+        .input-label span { color: var(--text-mid); }
+        .input-group { margin-bottom: 10px; }
+        .input-group:last-child { margin-bottom: 0; }
+
         /* ── SAVED SERVERS ── */
         .server-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
         .server-select {
@@ -215,6 +225,7 @@
         </div>
 
         <!-- URL input -->
+        <label class="input-label">Find via F12 → Network tab → filter "get_live_game_stats" → copy the Request URL</label>
         <input type="text" id="api" placeholder="http://YOUR-SERVER-IP:PORT/api/get_live_game_stats" oninput="onApiInput()">
 
         <!-- Name input (shown when saving) -->
@@ -302,7 +313,7 @@
         <div class="overlays-header">
             <div class="overlays-title">OBS Browser Sources</div>
             <div class="overlays-line"></div>
-            <div class="overlays-count">6 OVERLAYS</div>
+            <div class="overlays-count">7 OVERLAYS</div>
         </div>
         <div class="link-grid" id="output"></div>
     </div>
@@ -391,7 +402,8 @@
         { n: "Player Spotlight",  f: "DO_NOT_EDIT_player_spotlight.html",          icon: "🎯"  },
         { n: "Bottom Ticker",     f: "DO_NOT_EDIT_bottom_ticker.html",                      icon: "📊"  },
         { n: "Live Map",          f: "DO_NOT_EDIT_map_overlay.html", icon: "🗺️" },
-        { n: "Kill Streaks",      f: "DO_NOT_EDIT_killstreaks.html",               icon: "💀"  }
+        { n: "Kill Streaks",      f: "DO_NOT_EDIT_killstreaks.html",               icon: "💀"  },
+        { n: "Kill Feed",          f: "DO_NOT_EDIT_killfeed.html",                  icon: "🎯"  }
     ];
 
     let saveTimer = null;
@@ -527,7 +539,6 @@
         const name = document.getElementById('serverName').value.trim();
         if (!name) { document.getElementById('serverName').focus(); return; }
         const servers = getSavedServers();
-        // Update if URL already exists, otherwise add new
         const existing = servers.findIndex(s => s.url === url);
         if (existing >= 0) { servers[existing].name = name; }
         else { servers.push({ name, url }); }
@@ -738,6 +749,7 @@
             if (document.activeElement !== desktopInput) {
                 desktopInput.value = data.player || '';
             }
+
 
             // ── Sync desktop status bar ──
             updateStatus(data.api_endpoint || '');
