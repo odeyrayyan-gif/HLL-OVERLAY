@@ -1,4 +1,7 @@
 # HLL Command Hub — Changelog
+## v1.0.4
+- Fixed where soviets did not highlight when selected
+- Added instructions for editing and deleting current saved URL's
 
 ## v1.0.3
 - Added Sniper category to Team Comparison and Map Overlay
