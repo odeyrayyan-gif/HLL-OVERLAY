@@ -266,12 +266,8 @@
     }
 
     function isArmorCrew(p) {
-        const vKills = p.v_kills || 0;
-        const kills  = Number(p.kills || 0);
-        // Must have at least 1 vehicle kill
-        if (vKills === 0) return false;
-        // Vehicle kills must be at least 20% of total kills OR at least 2 vehicle kills
-        return vKills >= 2 || (kills > 0 && vKills / kills >= 0.2);
+        // Show anyone with at least 1 vehicle kill
+        return (p.v_kills || 0) >= 1;
     }
 
     function renderPanel(contentId, titleId, footerId, crews, color, factionName) {

@@ -114,7 +114,8 @@
         armor: ["tiger", "panzer", "puma", "lux", "marder", "stuart", "sherman", "is2", "t34", "75mm", "76mm", "88mm"],
         rocket: ["bazooka", "panzerschreck", "piat", "panzerfaust"],
         artillery: ["artillery", "155mm", "105mm", "lefh"],
-        satchel: ["satchel", "explosive charge"]
+        satchel: ["satchel", "explosive charge"],
+        sniper:  ["kar98k 8x", "karabiner 98 k 8x", "springfield m1903a3", "mosin nagant m91/30 pu", "gewehr 43 zf4", "svt 40 pu", "enfield l42", "zf41", "zf 41", "scoped"]
     };
 
     async function fetchNoCache(url) {
@@ -224,7 +225,7 @@
             players.forEach(p => teams[identifyTeam(p)].push(p));
 
             let tHtml = "";
-            const categories = ["infantry", "mg", "armor", "rocket", "artillery", "satchel"];
+            const categories = ["infantry", "sniper", "mg", "armor", "rocket", "artillery", "satchel"];
             let totalA = 0, totalX = 0;
 
             categories.forEach(cat => {

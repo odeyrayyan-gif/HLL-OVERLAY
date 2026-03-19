@@ -64,7 +64,8 @@
         armor: ["tiger", "panzer", "puma", "lux", "marder", "stuart", "sherman", "is2", "t34", "75mm", "76mm", "88mm"],
         rocket: ["bazooka", "panzerschreck", "piat", "panzerfaust"],
         artillery: ["artillery", "155mm", "105mm", "lefh"],
-        satchel: ["satchel", "explosive charge"]
+        satchel: ["satchel", "explosive charge"],
+        sniper:  ["kar98k 8x", "karabiner 98 k 8x", "springfield m1903a3", "mosin nagant m91/30 pu", "gewehr 43 zf4", "svt 40 pu", "enfield l42", "zf41", "zf 41", "scoped"]
     };
 
     async function fetchNoCache(url) {
@@ -130,23 +131,25 @@
             document.getElementById("right-label").innerText = rightTeamName;
 
             const rows = [
-                { id: "infantry", label: "Infantry" },
-                { id: "mg", label: "Machine Gun" },
-                { id: "armor", label: "Armor" },
-                { id: "rocket", label: "Anti-Tank" },
-                { id: "artillery", label: "Artillery" },
-                { id: "satchel", label: "Satchel" }
+                { id: "infantry",  label: "Infantry"    },
+                { id: "sniper",    label: "Sniper"      },
+                { id: "mg",        label: "Machine Gun" },
+                { id: "armor",     label: "Armor"       },
+                { id: "rocket",    label: "Anti-Tank"   },
+                { id: "artillery", label: "Artillery"   },
+                { id: "satchel",   label: "Satchel"     }
             ];
 
             let html = "";
+            let totalL = 0, totalR = 0;
+
             rows.forEach(row => {
                 const aVal = getKills(teams["Allies"], row.id);
                 const xVal = getKills(teams["Axis"], row.id);
-
-                // Left slot = Allied when not swapped, Axis when swapped
                 const valL = swapped ? xVal : aVal;
                 const valR = swapped ? aVal : xVal;
-
+                totalL += valL;
+                totalR += valR;
                 const leftBarPct = (valL / (valL + valR || 1)) * 100;
 
                 html += `
@@ -160,6 +163,14 @@
                         </div>
                     </div>`;
             });
+
+            // Total kills row at bottom
+            html += `
+                <div class="stat-row" style="margin-top:20px; border-top: 2px solid rgba(255,255,255,0.08); padding-top:15px;">
+                    <div class="stat-value left-text" style="font-size:90px">${totalL}</div>
+                    <div class="stat-name" style="color:var(--accent); font-weight:700; font-size:22px;">TOTAL KILLS</div>
+                    <div class="stat-value right-text" style="font-size:90px">${totalR}</div>
+                </div>`;
 
             document.getElementById("stats-content").innerHTML = html;
             document.getElementById("status-bar").innerText = `SIGNAL SECURE | SYNCED: ${players.length} PLAYERS`;
