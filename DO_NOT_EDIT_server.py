@@ -22,12 +22,13 @@ UPDATABLE_FILES = [
     "DO_NOT_EDIT_top10_scroll_banner.html",
     "DO_NOT_EDIT_killstreaks.html",
     "DO_NOT_EDIT_killfeed.html",
+    "DO_NOT_EDIT_tank_scoreboard.html",
 ]
 
 def get_local_version():
     try:
         with open(VERSION_FILE, "r") as f:
-            return f.read().strip()
+            return f.read().strip().strip("\n").strip()
     except:
         return "0.0.0"
 
@@ -35,7 +36,7 @@ def get_remote_version():
     try:
         url = GITHUB_RAW + VERSION_FILE + "?t=" + str(os.times()[4])
         with urllib.request.urlopen(url, timeout=5) as r:
-            return r.read().decode().strip()
+            return r.read().decode().strip().strip("\n").strip()
     except:
         return None
 
@@ -155,6 +156,7 @@ class HLLHandler(SimpleHTTPRequestHandler):
             "/spotlight.html":                    "/DO_NOT_EDIT_player_spotlight.html",
             "/kills.html":                        "/DO_NOT_EDIT_killstreaks.html",
             "/killfeed.html":                     "/DO_NOT_EDIT_killfeed.html",
+            "/tank_scoreboard.html":              "/DO_NOT_EDIT_tank_scoreboard.html",
         }
         if path in LEGACY:
             self.send_response(302)
