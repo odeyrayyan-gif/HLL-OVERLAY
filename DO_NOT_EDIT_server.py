@@ -22,7 +22,6 @@ UPDATABLE_FILES = [
     "DO_NOT_EDIT_top10_scroll_banner.html",
     "DO_NOT_EDIT_killstreaks.html",
     "DO_NOT_EDIT_killfeed.html",
-    "DO_NOT_EDIT_tank_scoreboard.html",
 ]
 
 def get_local_version():
@@ -156,7 +155,6 @@ class HLLHandler(SimpleHTTPRequestHandler):
             "/spotlight.html":                    "/DO_NOT_EDIT_player_spotlight.html",
             "/kills.html":                        "/DO_NOT_EDIT_killstreaks.html",
             "/killfeed.html":                     "/DO_NOT_EDIT_killfeed.html",
-            "/tank_scoreboard.html":              "/DO_NOT_EDIT_tank_scoreboard.html",
         }
         if path in LEGACY:
             self.send_response(302)
