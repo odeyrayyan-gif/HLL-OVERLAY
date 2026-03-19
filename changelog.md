@@ -1,5 +1,9 @@
 # HLL Command Hub — Changelog
 
+## v1.0.6
+- Fixed auto-updater downloading files to wrong folder on some systems
+- Server now always runs from its own folder regardless of where start.bat is launched from
+
 ## v1.0.5
 - Added Melee Leaderboard overlay — Top 5 knife and shovel killers, faction color coded, 3840x2160
 - Added Soviets faction pill highlight fix in hub
