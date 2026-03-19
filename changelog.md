@@ -1,7 +1,4 @@
 # HLL Command Hub — Changelog
-## v1.0.4
-- Fixed where soviets did not highlight when selected
-- Added instructions for editing and deleting current saved URL's
 
 ## v1.0.3
 - Added Sniper category to Team Comparison and Map Overlay
@@ -48,3 +45,18 @@
 - Team Comparison, AT Leaderboard, Player Spotlight overlays
 - Command Dashboard, Kill Streak Alerts overlays
 - Auto-updater via GitHub
+
+## v1.0.4
+- Fixed auto-updater version loop — server.py no longer auto-updates itself
+- Users can now drag all files into GitHub without causing update conflicts
+- HTML overlays still auto-update as normal
+
+## v1.0.5
+- Added Melee Leaderboard overlay — Top 5 knife and shovel killers, faction color coded, 3840x2160
+- Added Soviets faction pill highlight fix in hub
+- Added hint label under saved servers dropdown explaining how to edit/delete
+- Fixed 150mm Howitzer not being counted as artillery in Team Comparison and Map Overlay
+- Fixed 105mm Howitzer (Sherman SPA) being double-counted as armor and artillery
+- Fixed SPG crews appearing in infantry lists across all overlays
+- Artillery kills now locked to artillery category only — cannot bleed into armor or infantry
+- Artillery crews excluded from Kill Streak alerts
