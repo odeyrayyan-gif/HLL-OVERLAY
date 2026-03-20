@@ -1,5 +1,16 @@
 # HLL Command Hub — Changelog
 
+## v1.0.9
+- Added Message Banner overlay — transparent 1920x1080 overlay that bounces in (Pixar lamp style) and slowly fades out
+- Message Banner shows custom messages from hub Box 5 — completely separate from the scroll banners
+- Added "Show In" selector in Box 5 — choose between Scroll Banners or Message Banner per message
+- Scroll Banners get loop-based and short time frequencies (every loop, 3/5/10 loops, 2/5 min)
+- Message Banner gets longer time frequencies (2/5/10/15/30 min) and a ⚡ Test mode (every 5 sec) for positioning in OBS
+- Preview strip in hub updates to match the selected destination — shows scrolling ticker for banners, card-style preview for message banner
+- Ticker scroll animation no longer resets when stats update — seamless continuous scroll
+- Fixed ticker messages not appearing for users with messages saved on PC but viewing from phone
+- Messages synced from server every 2 seconds to all devices
+
 ## v1.0.8
 - Added Ticker Messages system to hub (Box 5)
 - Add custom messages to Top 5 and Top 10 scroll banners between player entries
