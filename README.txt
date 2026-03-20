@@ -90,12 +90,11 @@ need to find it again.
 
   ── HOW TO FIND IT — STEP BY STEP ───────────────────────
 
-  1. Open your CRCON web panel in Google Chrome
-     Log in if it asks for a password
+  1. Open your CRCON scoreboard/stats link in Google Chrome
+    
 
-  2. Go to any page that shows live player stats
-     This could be the scoreboard, live view, or stats tab
-     The exact page name depends on your CRCON version
+  2. Click on the tab at the top of the page that shows "current game"
+    
 
   3. Press F12 on your keyboard
      A panel opens on the right side of your screen
@@ -157,7 +156,18 @@ need to find it again.
      Desktop or Documents works fine
 
   2. Double-click start.bat
-     A black terminal window opens and shows:
+     A black terminal window opens. This system receives
+     regular updates — when a new version is available it
+     will download automatically before the server starts.
+     You may see:
+         Checking for updates...
+         Update available! v1.0.x -> v1.0.x
+         Downloading updates...
+         *** UPDATE COMPLETE — Please close and reopen start.bat ***
+     If this happens, close the window and double-click
+     start.bat again. The update only takes a few seconds.
+
+     When no update is available you will see:
          HLL OVERLAY SERVER — RUNNING
          Hub (this PC):  http://localhost:3000
          Hub (phone):    http://192.168.x.x:3000
@@ -181,8 +191,20 @@ need to find it again.
 ================================================================
 
   1. Double-click start.bat
+     If an update is available it will install automatically
+     Just close and reopen start.bat if prompted
+
   2. Open http://localhost:3000 in Chrome
-  3. Your API URL is already saved — nothing to retype
+
+  3. Check that your API URL is showing in Box 1 and the
+     status bar at the top is green
+     If the box is empty or the bar is red:
+       - Paste your API URL back in
+       - Hit the Save button (💾) to store it for next time
+       - You can save multiple servers by name, select them
+         from the dropdown, edit the URL and re-save, or
+         hit X to delete a saved server you no longer need
+
   4. Go live!
 
   To stop the server: close the terminal window
@@ -223,7 +245,9 @@ need to find it again.
 
 BOX 1 — MATCH API URL
   Paste your HLL CRCON server URL here (from Step 2).
-  Saved automatically. You never need to retype it.
+  Saved automatically. Use the dropdown to store multiple
+  servers by name — select to load, edit the URL then
+  hit Save to update, or X to delete.
 
 BOX 2 — TEAM SIDE ALIGNMENT
   Controls which side of the screen each faction is on.
@@ -260,9 +284,22 @@ BOX 4 — SPOTLIGHT PLAYER
   Updates within 1-2 seconds of typing.
 
 OBS BROWSER SOURCE URLS
-  The hub has a Copy URL button for each overlay.
-  Copy and paste these into OBS once.
-  The URLs never change so you only do this once.
+  Each overlay in the hub has a Copy URL button next to it.
+  Here is exactly how to use it:
+
+  1. Open the hub at http://localhost:3000
+  2. Scroll down to the overlay list at the bottom
+  3. Find the overlay you want to add to OBS
+  4. Click the Copy URL button next to it
+     The URL is now copied to your clipboard
+  5. Switch to OBS and follow the steps in OBS SETUP below
+  6. Paste the URL when OBS asks for it (Ctrl+V)
+
+  The URLs look like:
+  http://localhost:3000/DO_NOT_EDIT_team_compare.html
+
+  These URLs never change so you only need to do this once
+  per overlay. OBS will remember them automatically.
 
 
 ================================================================
@@ -270,49 +307,46 @@ OBS BROWSER SOURCE URLS
 ================================================================
 
 Add each overlay as a Browser Source in OBS.
-Use these exact Width and Height values:
+All overlays use one of two canvas sizes:
 
-  ┌────────────────────────────────────┬──────────┬──────────┐
-  │ Overlay                            │  Width   │  Height  │
-  ├────────────────────────────────────┼──────────┼──────────┤
-  │ Team Comparison                    │  3840 px │  2160 px │
-  │ DO_NOT_EDIT_team_compare.html      │          │          │
-  ├────────────────────────────────────┼──────────┼──────────┤
-  │ AT Leaderboard                     │  3840 px │  2160 px │
-  │ DO_NOT_EDIT_at_leaderboard.html    │          │          │
-  ├────────────────────────────────────┼──────────┼──────────┤
-  │ Player Spotlight                   │  1920 px │  1080 px │
-  │ DO_NOT_EDIT_player_spotlight.html  │          │          │
-  ├────────────────────────────────────┼──────────┼──────────┤
-  │ Bottom Ticker                      │  1920 px │    60 px │
-  │ DO_NOT_EDIT_bottom_ticker.html     │          │          │
-  ├────────────────────────────────────┼──────────┼──────────┤
-  │ Live Map / Command Dashboard       │  1920 px │  1080 px │
-  │ DO_NOT_EDIT_map_overlay.html       │          │          │
-  ├────────────────────────────────────┼──────────┼──────────┤
-  │ Kill Streak Alerts                 │  1920 px │  1080 px │
-  │ DO_NOT_EDIT_killstreaks.html       │          │          │
-  └────────────────────────────────────
-  ├────────────────────────────────────┼──────────┼──────────┤
-  │ Kill Feed                          │  1920 px │  1080 px │
-  │ DO_NOT_EDIT_killfeed.html          │          │          │
-  └────────────────────────────────────┴──────────┴──────────┘┴──────────┴──────────┘
+  ┌──────────────────────────────────────┬──────────┬──────────┐
+  │ 3840 x 2160 (4K canvas)             │  Width   │  Height  │
+  ├──────────────────────────────────────┼──────────┼──────────┤
+  │ Team Comparison                      │  3840 px │  2160 px │
+  │ AT Leaderboard                       │          │          │
+  │ Melee Leaderboard                    │          │          │
+  └──────────────────────────────────────┴──────────┴──────────┘
 
-WHY ARE TEAM COMPARISON AND AT LEADERBOARD 4K?
-  They are built on a 4K canvas so they stay sharp when
-  you scale them down in OBS. Add them at 3840x2160 then
-  drag the corners in your scene to make them smaller.
+  ┌──────────────────────────────────────┬──────────┬──────────┐
+  │ 1920 x 1080 (Full HD canvas)        │  Width   │  Height  │
+  ├──────────────────────────────────────┼──────────┼──────────┤
+  │ Player Spotlight                     │  1920 px │  1080 px │
+  │ Live Map / Command Dashboard         │          │          │
+  │ Kill Streak Alerts                   │          │          │
+  │ Kill Feed                            │          │          │
+  │ Tank Scoreboard                      │          │          │
+  └──────────────────────────────────────┴──────────┴──────────┘
+
+  ┌──────────────────────────────────────┬──────────┬──────────┐
+  │ 1920 x 60 (Ticker banner)           │  Width   │  Height  │
+  ├──────────────────────────────────────┼──────────┼──────────┤
+  │ Top 5 Scroll Banner                  │  1920 px │    60 px │
+  │ Top 10 Scroll Banner                 │          │          │
+  └──────────────────────────────────────┴──────────┴──────────┘
+
+WHY ARE SOME OVERLAYS 4K?
+  The 4K overlays stay sharp when you scale them down in
+  OBS. Add them at 3840x2160 then drag the corners in your
+  scene to whatever size fits your layout.
 
 HOW TO ADD A BROWSER SOURCE IN OBS:
-  1. In your Scene, click the + under Sources
+  1. In your Scene, click the + button under Sources
   2. Choose Browser
   3. Give it a name — e.g. HLL Team Compare
-  4. Paste the URL from the hub
-     Example: http://localhost:3000/DO_NOT_EDIT_team_compare.html
-  5. Set Width and Height from the table above
-  6. Tick "Refresh browser when scene becomes active"
-  7. Click OK
-  8. Drag and resize in your scene as needed
+  4. Paste the URL you copied from the bottom inside of the HLL COMMAND HUB (Ctrl+V)
+  5. Set Width and Height from the tables above
+  6. Click OK
+  7. Drag and resize in your scene as needed
 
 
 ================================================================
@@ -321,8 +355,9 @@ HOW TO ADD A BROWSER SOURCE IN OBS:
 
 TEAM COMPARISON
   Big side-by-side stat card. Shows kills broken down by
-  category: Infantry, MG, Armor, AT, Artillery, Satchel.
-  Progress bars show which team is winning each category.
+  category: Infantry, Sniper, MG, Armor, AT, Artillery,
+  Satchel. Progress bars show which team is winning each
+  category. Total kills row at the bottom.
   Updates every 4 seconds.
 
 AT LEADERBOARD
@@ -330,34 +365,55 @@ AT LEADERBOARD
   rocket kills. Color coded by faction.
   Updates every 4 seconds.
 
+MELEE LEADERBOARD
+  Top 5 knife and shovel killers ranked by total melee
+  kills. Color coded by faction.
+  Updates every 4 seconds.
+
 PLAYER SPOTLIGHT
-  Card that appears in the bottom left showing one
-  player's live stats: Kills, Deaths, K/D, KPM, Combat,
-  and their most used weapon.
+  Card in the bottom left showing one player's live stats:
+  Kills, Deaths, K/D, KPM, Combat, and top weapon.
   Controlled by Box 4 in the hub.
   Auto shows top infantry killer when box is empty.
   Armor and artillery players never show in auto mode.
   Updates every 3 seconds.
 
-BOTTOM TICKER
-  A scrolling bar along the bottom of the screen showing
-  the top 5 infantry killers and their stats.
+TOP 5 SCROLL BANNER
+  Scrolling bar along the bottom showing the top 5
+  infantry killers and their stats.
   Armor and artillery players are excluded.
   Updates every 4 seconds.
 
+TOP 10 SCROLL BANNER
+  Same as Top 5 but shows 10 players.
+  Updates every 4 seconds.
+
 LIVE MAP / COMMAND DASHBOARD
-  Two panels. Left side: Top 10 infantry leaderboard with
-  player names color coded by faction. Right side: kill
-  breakdown by weapon category with progress bars.
+  Two panels. Left: Top 10 infantry leaderboard with
+  player names color coded by faction. Right: kill
+  breakdown by weapon category including Sniper.
   Armor and artillery excluded from the top 10.
   Updates every 4 seconds.
 
 KILL STREAK ALERTS
-  A pop-up card that appears whenever any player hits a
-  kill streak milestone: 5, 10, 15, 20, or 25 kills in
-  a row without dying. The card color and title change
-  based on the streak size. Resets when the player dies.
-  Checks for streaks every 2 seconds.
+  Pop-up alert when any player hits a kill streak
+  milestone: 5, 10, 15, 20, or 25 kills without dying.
+  Card color and title change based on streak size.
+  Artillery players are excluded entirely.
+  Resets when the player dies. Checks every 1 second.
+
+KILL FEED
+  Live feed in the top right corner showing the last 5
+  kills. Killer name, abbreviated weapon, and victim.
+  Killer names are color coded by faction.
+  Entries fade after 10 seconds. Updates every 1 second.
+
+TANK SCOREBOARD
+  Two side panels showing Allied and Axis armor crews.
+  Detects tank crews automatically by their weapons.
+  Shows crew name, tank type, vehicle kills, infantry
+  kills and K/D. Sorted by infantry kills.
+  Artillery crews are excluded. Updates every 4 seconds.
 
 
 ================================================================
@@ -371,16 +427,22 @@ KILL STREAK ALERTS
 
   DO NOT OPEN, EDIT, OR RENAME ANYTHING BELOW:
   ──────────────────────────────────────────────
-  DO_NOT_EDIT_hub.html              The control hub
-  DO_NOT_EDIT_server.py             The server engine
-  DO_NOT_EDIT_settings.json         Saved settings
-  DO_NOT_EDIT_player.txt            Current spotlight name
-  DO_NOT_EDIT_team_compare.html     Team Comparison overlay
-  DO_NOT_EDIT_at_leaderboard.html   AT Leaderboard overlay
-  DO_NOT_EDIT_player_spotlight.html Player Spotlight overlay
-  DO_NOT_EDIT_bottom_ticker.html    Bottom Ticker overlay
-  DO_NOT_EDIT_map_overlay.html      Command Dashboard overlay
-  DO_NOT_EDIT_killstreaks.html      Kill Streak Alerts overlay
+  DO_NOT_EDIT_hub.html               The control hub
+  DO_NOT_EDIT_server.py              The server engine
+  DO_NOT_EDIT_settings.json          Saved settings
+  DO_NOT_EDIT_player.txt             Current spotlight name
+  DO_NOT_EDIT_team_compare.html      Team Comparison overlay
+  DO_NOT_EDIT_at_leaderboard.html    AT Leaderboard overlay
+  DO_NOT_EDIT_melee_leaderboard.html Melee Leaderboard overlay
+  DO_NOT_EDIT_player_spotlight.html  Player Spotlight overlay
+  DO_NOT_EDIT_top5_scroll_banner.html  Top 5 Scroll Banner
+  DO_NOT_EDIT_top10_scroll_banner.html Top 10 Scroll Banner
+  DO_NOT_EDIT_map_overlay.html       Command Dashboard overlay
+  DO_NOT_EDIT_killstreaks.html       Kill Streak Alerts overlay
+  DO_NOT_EDIT_killfeed.html          Kill Feed overlay
+  DO_NOT_EDIT_tank_scoreboard.html   Tank Scoreboard overlay
+  changelog.md                       Update history
+  version.txt                        Current version
 
 
 ================================================================
@@ -405,7 +467,8 @@ Overlays show "Signal Lost" or "Awaiting API"
 Stats showing as zero
   The overlays use weapon name keywords to sort kills.
   Make sure your CRCON is returning live match data.
-  Try clicking Refresh in the OBS browser source.
+  Try double-clicking the OBS browser source and
+  selecting "Refresh cache of current page".
 
 Phone shows "Server offline"
   Use the IP address from the terminal window.
@@ -423,6 +486,16 @@ Spotlight not finding a player
   Some players use special characters that look like normal
   letters but are not — try a different part of the name.
 
+Tank scoreboard shows "No armor active"
+  Tank crews are detected by their weapon signatures.
+  The crew must have gotten at least one kill using a
+  tank weapon for them to appear on the scoreboard.
+
+Kill Feed shows "Enemy" instead of a victim name
+  Victim names are inferred from death count changes.
+  In very busy moments with many simultaneous kills the
+  match may not always be exact — this is a known limit.
+
 
 ================================================================
   SHARING THIS WITH OTHERS
@@ -435,11 +508,12 @@ Each person needs to do two things:
   2. Find their own API URL (see STEP 2 above)
 
 Everything else works straight out of the folder.
+Updates happen automatically when they run start.bat.
 
 
 ================================================================
   VERSION
 ================================================================
-  HLL Command Hub v3.0
-  Local server build — no internet required during use
+  HLL Command Hub v1.0.6
+  Local server build — internet required during use
 ================================================================
