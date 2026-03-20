@@ -1,5 +1,5 @@
 {
-  "api_endpoint": "http://69.48.207.90:7010/api/get_live_game_stats",
+  "api_endpoint": "",
   "swap_sides": false,
   "player": "",
   "allied_faction": "ALLIES",

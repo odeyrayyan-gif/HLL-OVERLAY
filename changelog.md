@@ -1,5 +1,35 @@
 # HLL Command Hub — Changelog
 
+## v1.0.8
+- Added Ticker Messages system to hub (Box 5)
+- Add custom messages to Top 5 and Top 10 scroll banners between player entries
+- Choose platform icon per message: General, Twitch, YouTube, TikTok, X, Discord, Instagram (proper SVG brand icons)
+- Set show frequency per message: every loop, every 3/5/10 loops, every 2/5 minutes
+- Toggle individual messages on/off without deleting them
+- Live preview strip shows exactly how messages look in the ticker before going live
+- Phone view (Box 4) shows all saved messages — toggle on/off and change frequency from your phone
+- Messages saved on PC automatically sync to phone view within 2 seconds
+- Messages must be created on PC first, phone controls existing messages only
+- Fixed ticker scroll banners using stale endpoint — now uses cached config for reliability
+
+## v1.0.8
+- Replaced emoji platform icons with proper SVG brand icons (Twitch, YouTube, TikTok, X, Discord, Instagram)
+- Fixed ticker messages not appearing in Top 5 and Top 10 scroll banners
+- Hub now pushes ticker messages to server every 5 seconds to keep overlays in sync
+- SVG icons now render correctly in hub, preview strip, phone view, and ticker overlays
+
+## v1.0.7
+- Added Ticker Messages system to hub (Box 5)
+- Add multiple custom messages to the Top 5 and Top 10 scroll banners
+- Choose platform icon per message: General, Twitch, YouTube, TikTok, X, Discord, Instagram
+- Set frequency per message: every loop, every 3/5/10 loops, every 2/5 minutes
+- Toggle individual messages on/off without deleting them
+- Live preview strip in hub shows exactly how messages look in the ticker
+- Messages persist between sessions and sync to overlays instantly
+- Phone view (Box 4) shows saved messages from desktop — toggle on/off and change frequency per message from your phone mid-stream
+- Messages must be created on the PC hub first before they appear on the phone view
+- Updated README with ticker messages section
+
 ## v1.0.6
 - Fixed auto-updater downloading files to wrong folder on some systems
 - Server now always runs from its own folder regardless of where start.bat is launched from

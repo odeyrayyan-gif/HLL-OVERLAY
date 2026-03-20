@@ -283,6 +283,33 @@ BOX 4 — SPOTLIGHT PLAYER
 
   Updates within 1-2 seconds of typing.
 
+BOX 5 — TICKER MESSAGES
+  Add custom messages that appear inside the Top 5 and
+  Top 10 Scroll Banner overlays between player entries.
+
+  HOW TO USE ON PC:
+  1. Pick a platform icon (Twitch, YouTube, Discord etc.)
+  2. Type your message text
+  3. Choose how often it appears (every loop, every 5
+     loops, every 2 minutes etc.)
+  4. Click Add Message to Ticker
+  5. Use the toggle on each saved message to turn it
+     on or off without deleting it
+  6. The live preview strip shows exactly how it will
+     look inside the ticker
+
+  Messages are styled differently from player entries
+  with a platform-colored accent bar so viewers can
+  clearly tell them apart from kill stats.
+
+  CONTROLLING FROM YOUR PHONE:
+  Once messages are saved on the PC hub they appear in
+  Box 4 on the phone view. From your phone you can:
+  - Toggle any message on or off instantly
+  - Change the frequency of any message mid-stream
+  Messages must be created on the PC first — the phone
+  view only controls messages that already exist.
+
 OBS BROWSER SOURCE URLS
   Each overlay in the hub has a Copy URL button next to it.
   Here is exactly how to use it:
@@ -514,6 +541,6 @@ Updates happen automatically when they run start.bat.
 ================================================================
   VERSION
 ================================================================
-  HLL Command Hub v1.0.6
+  HLL Command Hub v1.0.8
   Local server build — internet required during use
 ================================================================
