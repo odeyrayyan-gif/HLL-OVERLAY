@@ -86,7 +86,7 @@ const AXIS_SIGS = ["kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
 
 async function fetchNoCache(url) {
     const sep = url.includes("?") ? "&" : "?";
-    return fetch(url + sep + "t=" + Date.now(), { cache: "no-store" });
+    return fetch(url + sep + "t=" + Date.now(), { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" } });
 }
 
 function render(killers) {

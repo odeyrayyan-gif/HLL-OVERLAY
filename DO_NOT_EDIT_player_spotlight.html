@@ -192,7 +192,7 @@ function normalize(n){ return String(n||"").toLowerCase().trim(); }
 
 async function fetchNoCache(url){
     const separator = url.includes("?") ? "&" : "?";
-    return fetch(url + separator + "t=" + Date.now(), {cache:"no-store"});
+    return fetch(url + separator + "t=" + Date.now(), {cache:"no-store", headers:{"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"}});
 }
 
 // Updated to read JSON for settings, but keep plain text for PLAYER_FILE
@@ -254,7 +254,7 @@ function render(p){
 
     // Exclude armor crews and artillery gunners from infantry lists
     const EXCLUDED_WEAPONS_LIST = [
-        'artillery','lefh','155mm','150mm','105mm','howitzer','brumm','stuh','strumpanzer','pak40','anti_tank',
+        'artillery','lefh','155mm','150mm','105mm','howitzer','pak40','anti_tank',
         'zis3','88mm','75mm','76mm','tank','mine'
     ];
     function isArtyOrArmor(p) {

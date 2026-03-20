@@ -559,6 +559,6 @@ Updates happen automatically when they run start.bat.
 ================================================================
   VERSION
 ================================================================
-  HLL Command Hub v1.0.9
+  HLL Command Hub v1.1.0
   Local server build — internet required during use
 ================================================================

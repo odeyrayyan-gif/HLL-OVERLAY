@@ -1,5 +1,14 @@
 # HLL Command Hub — Changelog
 
+## v1.1.0
+- Top 5 and Top 10 scroll banners now use JS-driven scrolling (requestAnimationFrame) instead of CSS animation — completely seamless, never resets or jumps when stats or messages update
+- All overlays now send a proper browser User-Agent header with API requests — fixes OPNsense WAP firewall blocks that some server admins may have
+- Brummbar (Strumpanzer IV) now correctly identified as artillery and excluded from infantry lists across all overlays
+- Brummbar shows as "Brummbar SPA" in kill feed
+- Panzer IV and Panther no longer falsely detected as Sherman — bracket-priority weapon lookup added
+- Tiger correctly matched via sd.kfz.181 bracket name
+- Sherman Jumbo (M4A3E2) now shows as "Green Bean" in tank scoreboard and kill feed
+
 ## v1.0.9
 - Added Message Banner overlay — transparent 1920x1080 overlay that bounces in (Pixar lamp style) and slowly fades out
 - Message Banner shows custom messages from hub Box 5 — completely separate from the scroll banners

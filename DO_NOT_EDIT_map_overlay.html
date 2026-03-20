@@ -119,7 +119,7 @@
     };
 
     async function fetchNoCache(url) {
-        return fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" }).then(r => r.json());
+        return fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" } }).then(r => r.json());
     }
     async function getConfig() {
         return fetch(CONFIG_URL).then(r => r.json());
@@ -133,7 +133,7 @@
     }
 
     // Weapons containing these are ALWAYS artillery — never armor/infantry
-    const ARTY_OVERRIDES = ["howitzer", "150mm", "105mm", "155mm", "lefh", "sfh", "artillery", "brumm", "stuh", "strumpanzer"];
+    const ARTY_OVERRIDES = ["howitzer", "150mm", "105mm", "155mm", "lefh", "sfh", "artillery"];
 
     function getKills(players, cat) {
         let count = 0;
@@ -175,7 +175,7 @@
 
     // Exclude armor crews and artillery gunners from infantry lists
     const EXCLUDED_WEAPONS_LIST = [
-        'artillery','lefh','155mm','150mm','105mm','howitzer','brumm','stuh','strumpanzer','pak40','anti_tank',
+        'artillery','lefh','155mm','150mm','105mm','howitzer','pak40','anti_tank',
         'zis3','88mm','75mm','76mm','tank','mine'
     ];
     function isArtyOrArmor(p) {

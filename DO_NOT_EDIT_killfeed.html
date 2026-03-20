@@ -261,7 +261,6 @@
         "50mm kwk 39":              "Puma 50",
         "20mm kwk 30":              "Lux 20",
         "tiger":                    "Tiger",
-        "sd.kfz.181":               "Tiger",
         "panzer iv":                "Panzer IV",
         "panther":                  "Panther",
         "puma":                     "Puma",
@@ -271,8 +270,6 @@
         "pak40":                    "PAK40",
         // US Tanks
         "75mm cannon m3":           "Sherman 75",
-        "m4a3e2":                   "Green Bean",
-        "jumbo":                    "Green Bean",
         "75mm m3":                  "Sherman 75",
         "76mm m1":                  "Sherman 76",
         "76mm cannon":              "Sherman 76",
@@ -299,9 +296,6 @@
         "105mm m2a1":               "105mm Arty",
         "105mm":                    "105mm Arty",
         "lefh 18":                  "leFH18 Arty",
-        "stuh 43":                  "Brummbar SPA",
-        "brummbar":                 "Brummbar SPA",
-        "strumpanzer":              "Brummbar SPA",
         "lefh":                     "leFH18 Arty",
         "zis 3":                    "ZiS-3 Arty",
         "zis3":                     "ZiS-3 Arty",
@@ -387,7 +381,7 @@
         }
         try {
             const sep = api.includes("?") ? "&" : "?";
-            const res = await fetch(api + sep + "t=" + Date.now(), { cache: "no-store" });
+            const res = await fetch(api + sep + "t=" + Date.now(), { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" } });
             if (!res.ok) throw new Error(res.status);
             const data    = await res.json();
             const players = data?.result?.stats || [];
