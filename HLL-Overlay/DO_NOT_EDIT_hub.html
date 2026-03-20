@@ -93,6 +93,66 @@
 
         @media (max-width: 580px) { .link-grid { grid-template-columns: 1fr; } .toggle-group { grid-template-columns: 1fr; } }
 
+        /* ── TICKER MESSAGES ── */
+        .msg-platform-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 12px; }
+        .msg-platform-btn {
+            padding: 10px 6px; background: #070a0f; border: 1px solid var(--border);
+            border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.2s;
+            font-size: 18px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        .msg-platform-btn span { font-size: 9px; letter-spacing: 1px; color: var(--text-dim); font-family: 'Share Tech Mono', monospace; text-transform: uppercase; }
+        .msg-platform-btn:hover { border-color: var(--border-bright); }
+        .msg-platform-btn.selected { border-color: var(--red); background: rgba(172,46,46,0.1); }
+        .msg-freq-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .msg-freq-btn {
+            padding: 8px; background: #070a0f; border: 1px solid var(--border);
+            border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.2s;
+            font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 1px;
+            color: var(--text-mid); text-transform: uppercase;
+        }
+        .msg-freq-btn:hover { border-color: var(--border-bright); }
+        .msg-freq-btn.selected { border-color: var(--red); background: rgba(172,46,46,0.1); color: white; }
+        .msg-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .msg-item {
+            display: grid; grid-template-columns: auto 1fr auto auto; align-items: center;
+            gap: 10px; padding: 10px 12px; background: #070a0f;
+            border: 1px solid var(--border); border-radius: 6px;
+            transition: border-color 0.2s;
+        }
+        .msg-item.active { border-color: rgba(172,46,46,0.4); }
+        .msg-item-icon { font-size: 18px; flex-shrink: 0; }
+        .msg-item-info { overflow: hidden; }
+        .msg-item-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .msg-item-freq { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+        .msg-toggle { width: 36px; height: 20px; background: #1a1f2a; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; position: relative; transition: all 0.2s; flex-shrink: 0; }
+        .msg-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--text-dim); transition: all 0.2s; }
+        .msg-toggle.on { background: rgba(172,46,46,0.2); border-color: var(--red); }
+        .msg-toggle.on::after { left: 18px; background: var(--red); }
+        .msg-del-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; transition: all 0.2s; flex-shrink: 0; }
+        .msg-del-btn:hover { background: rgba(255,60,60,0.1); border-color: #ff3c3c; color: #ff3c3c; }
+        /* Preview strip */
+        .msg-preview-wrap { margin-top: 14px; }
+        .msg-preview-label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+        .msg-preview-strip {
+            width: 100%; height: 36px; background: rgba(0,0,0,0.9);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 4px;
+            overflow: hidden; display: flex; align-items: center;
+            border-top: 2px solid #ff9d00; position: relative;
+        }
+        .msg-preview-inner {
+            display: flex; white-space: nowrap;
+            animation: previewScroll 8s linear infinite;
+        }
+        @keyframes previewScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .msg-preview-entry {
+            display: inline-flex; align-items: center; padding: 0 20px; gap: 8px;
+            font-family: 'Segoe UI', sans-serif; font-size: 13px;
+        }
+        .msg-preview-icon { font-size: 14px; }
+        .msg-preview-text { font-weight: 700; color: white; }
+        .msg-preview-divider { color: rgba(255,255,255,0.2); }
+        .no-msg-hint { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); text-align: center; padding: 10px; letter-spacing: 1px; }
+
         /* ── INPUT LABELS ── */
         .input-label {
             font-family: 'Share Tech Mono', monospace;
@@ -184,6 +244,17 @@
 
         .phone-clear { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--border); color: var(--text-mid); border-radius: 8px; font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 8px; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
         .phone-clear:active { background: var(--red); border-color: var(--red); color: white; }
+        .phone-msg-item { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px; padding: 12px; background: #070a0f; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+        .phone-msg-item.active { border-color: rgba(172,46,46,0.4); }
+        .phone-msg-icon { font-size: 20px; }
+        .phone-msg-text { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .phone-msg-freq { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+        .phone-msg-toggle { width: 40px; height: 22px; background: #1a1f2a; border: 1px solid var(--border); border-radius: 11px; cursor: pointer; position: relative; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+        .phone-msg-toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--text-dim); transition: all 0.2s; }
+        .phone-msg-toggle.on { background: rgba(172,46,46,0.2); border-color: var(--red); }
+        .phone-msg-toggle.on::after { left: 21px; background: var(--red); }
+        .phone-freq-select { width: 100%; padding: 8px 10px; background: #070a0f; border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-family: 'Share Tech Mono', monospace; font-size: 11px; outline: none; margin-top: 6px; letter-spacing: 1px; }
+        .phone-no-msgs { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); text-align: center; padding: 12px; letter-spacing: 1px; }
 
         .phone-status { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; width: 100%; display: flex; align-items: center; gap: 10px; }
         .phone-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
@@ -220,19 +291,22 @@
             <select class="server-select" id="serverSelect" onchange="onServerSelect()">
                 <option value="">— Saved Servers —</option>
             </select>
-            <button class="server-btn green" onclick="saveServer()" title="Save current URL as a named server">💾 Save</button>
-            <button class="server-btn" onclick="deleteServer()" title="Delete selected server">✕</button>
+            <button type="button" class="server-btn green" onclick="saveServer()" title="Save current URL as a named server">💾 Save</button>
+            <button type="button" class="server-btn" onclick="deleteServer()" title="Delete selected server">✕</button>
         </div>
 
         <!-- URL input -->
         <label class="input-label">Find via F12 → Network tab → filter "get_live_game_stats" → copy the Request URL</label>
         <input type="text" id="api" placeholder="http://YOUR-SERVER-IP:PORT/api/get_live_game_stats" oninput="onApiInput()">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);margin-top:7px;letter-spacing:1px;">
+            SELECT a server to load it &nbsp;·&nbsp; EDIT the URL then 💾 Save to update it &nbsp;·&nbsp; ✕ to delete selected
+        </div>
 
         <!-- Name input (shown when saving) -->
         <div class="server-name-row" id="saveNameRow" style="display:none;">
             <input type="text" class="server-name-input" id="serverName" placeholder="Give this server a name (e.g. EU Match Server)">
-            <button class="server-btn green" onclick="confirmSaveServer()">✓ Confirm</button>
-            <button class="server-btn" onclick="cancelSaveServer()">✕</button>
+            <button type="button" class="server-btn green" onclick="confirmSaveServer()">✓ Confirm</button>
+            <button type="button" class="server-btn" onclick="cancelSaveServer()">✕</button>
         </div>
     </div>
 
@@ -309,11 +383,85 @@
     </div>
 
     <!-- OBS LINKS -->
+    <!-- 5: TICKER MESSAGES -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-num">5</div>
+            <div class="section-title">Ticker Messages</div>
+            <div class="section-hint" id="msgHint">Injected into Top 5 &amp; Top 10 scroll banners</div>
+        </div>
+
+        <!-- Platform picker -->
+        <label class="input-label">Platform Icon — <span>choose what appears next to your message</span></label>
+        <div class="msg-platform-grid" id="platformGrid">
+            <div class="msg-platform-btn selected" data-platform="general" data-icon="general" onclick="selectPlatform(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff9d00"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+                <span>General</span>
+            </div>
+            <div class="msg-platform-btn" data-platform="twitch" data-icon="twitch" onclick="selectPlatform(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#9146ff"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+                <span>Twitch</span>
+            </div>
+            <div class="msg-platform-btn" data-platform="youtube" data-icon="youtube" onclick="selectPlatform(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+                <span>YouTube</span>
+            </div>
+            <div class="msg-platform-btn" data-platform="tiktok" data-icon="tiktok" onclick="selectPlatform(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.2 8.2 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>
+                <span>TikTok</span>
+            </div>
+            <div class="msg-platform-btn" data-platform="twitter" data-icon="twitter" onclick="selectPlatform(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>
+                <span>X</span>
+            </div>
+            <div class="msg-platform-btn" data-platform="discord" data-icon="discord" onclick="selectPlatform(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                <span>Discord</span>
+            </div>
+            <div class="msg-platform-btn" data-platform="instagram" data-icon="instagram" onclick="selectPlatform(this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="iggrad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f09433"/><stop offset="50%" style="stop-color:#dc2743"/><stop offset="100%" style="stop-color:#bc1888"/></linearGradient></defs><path fill="url(#iggrad)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+                <span>Insta</span>
+            </div>
+        </div>
+
+        <!-- Message text -->
+        <label class="input-label" style="margin-top:4px">Message Text</label>
+        <input type="text" id="msgText" placeholder="e.g. Enjoying the stream? Hit that Subscribe button!" style="margin-bottom:10px">
+
+        <!-- Frequency -->
+        <label class="input-label">Show Frequency</label>
+        <div class="msg-freq-group" id="freqGroup">
+            <div class="msg-freq-btn selected" data-freq="every_loop" onclick="selectFreq(this)">Every Loop</div>
+            <div class="msg-freq-btn" data-freq="every_3" onclick="selectFreq(this)">Every 3 Loops</div>
+            <div class="msg-freq-btn" data-freq="every_5" onclick="selectFreq(this)">Every 5 Loops</div>
+            <div class="msg-freq-btn" data-freq="every_10" onclick="selectFreq(this)">Every 10 Loops</div>
+            <div class="msg-freq-btn" data-freq="every_2min" onclick="selectFreq(this)">Every 2 Min</div>
+            <div class="msg-freq-btn" data-freq="every_5min" onclick="selectFreq(this)">Every 5 Min</div>
+        </div>
+
+        <!-- Add button -->
+        <button type="button" class="server-btn green" style="width:100%;padding:12px;font-size:13px;letter-spacing:2px;" onclick="addTickerMessage()">＋ ADD MESSAGE TO TICKER</button>
+
+        <!-- Saved messages list -->
+        <div class="msg-list" id="msgList"></div>
+
+        <!-- Live preview -->
+        <div class="msg-preview-wrap">
+            <div class="msg-preview-label">Live Preview — how it looks in the ticker</div>
+            <div class="msg-preview-strip">
+                <div class="msg-preview-inner" id="msgPreviewInner">
+                    <div class="msg-preview-entry"><span class="msg-preview-icon">📢</span><span class="msg-preview-text">Add a message above to see it here</span><span class="msg-preview-divider"> // </span></div>
+                    <div class="msg-preview-entry"><span class="msg-preview-icon">📢</span><span class="msg-preview-text">Add a message above to see it here</span><span class="msg-preview-divider"> // </span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="section">
         <div class="overlays-header">
             <div class="overlays-title">OBS Browser Sources</div>
             <div class="overlays-line"></div>
-            <div class="overlays-count">9 OVERLAYS</div>
+            <div class="overlays-count">10 OVERLAYS</div>
         </div>
         <div class="link-grid" id="output"></div>
     </div>
@@ -390,6 +538,16 @@
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         <button class="phone-clear" onclick="clearPhonePlayer()">✕ Clear — Show Top Killer</button>
     </div>
+
+    <!-- Phone: Ticker Messages -->
+    <div class="phone-card" id="phone-msg-card">
+        <div class="phone-label">
+            <div class="phone-label-num">4</div>
+            Ticker Messages
+            <span class="phone-hint">toggle &amp; frequency</span>
+        </div>
+        <div id="phone-msg-list"><div class="phone-no-msgs">No messages saved — add them on PC first</div></div>
+    </div>
 </div>
 
 <script>
@@ -405,7 +563,8 @@
         { n: "Live Map",          f: "DO_NOT_EDIT_map_overlay.html", icon: "🗺️" },
         { n: "Kill Streaks",      f: "DO_NOT_EDIT_killstreaks.html",               icon: "💀"  },
         { n: "Kill Feed",          f: "DO_NOT_EDIT_killfeed.html",                  icon: "🎯"  },
-        { n: "Tank Scoreboard",    f: "DO_NOT_EDIT_tank_scoreboard.html",            icon: "🛡️"  }
+        { n: "Tank Scoreboard",    f: "DO_NOT_EDIT_tank_scoreboard.html",            icon: "🛡️"  },
+        { n: "Melee Leaderboard",  f: "DO_NOT_EDIT_melee_leaderboard.html",          icon: "🔪"  }
     ];
 
     let saveTimer = null;
@@ -483,7 +642,7 @@
 
     function updateFactionPills(name) {
         ALLIED_FACTIONS.forEach(f => {
-            const id = 'faction-' + f.toLowerCase().replace(' army','').replace(' ','');
+            const id = 'faction-' + f.toLowerCase().replace(' army','').replace(' ','').replace('soviets','soviet');
             const el = document.getElementById(id);
             if (el) el.className = 'faction-pill' + (f === name ? ' selected-allied' : '');
         });
@@ -658,6 +817,53 @@
     // ── PHONE MODE JS ──
     let phoneTimer = null;
 
+    function phoneToggleMessage(id) {
+        const msgs = getTickerMessages();
+        const m = msgs.find(m => m.id === id);
+        if (m) m.active = !m.active;
+        setTickerMessages(msgs);
+        renderPhoneMsgList();
+        renderMsgList();
+        renderPreview();
+    }
+
+    function phoneSetFreq(id, freq) {
+        const msgs = getTickerMessages();
+        const m = msgs.find(m => m.id === id);
+        if (m) m.freq = freq;
+        setTickerMessages(msgs);
+        renderPhoneMsgList();
+    }
+
+    function renderPhoneMsgList() {
+        const msgs = getTickerMessages();
+        const el = document.getElementById('phone-msg-list');
+        if (!el) return;
+        if (!msgs.length) {
+            el.innerHTML = '<div class="phone-no-msgs">No messages saved — add them on PC first</div>';
+            return;
+        }
+        const FREQ_OPTS = [
+            { v: 'every_loop',  l: 'Every loop'    },
+            { v: 'every_3',     l: 'Every 3 loops' },
+            { v: 'every_5',     l: 'Every 5 loops' },
+            { v: 'every_10',    l: 'Every 10 loops'},
+            { v: 'every_2min',  l: 'Every 2 min'   },
+            { v: 'every_5min',  l: 'Every 5 min'   },
+        ];
+        el.innerHTML = msgs.map(m => `
+            <div class="phone-msg-item ${m.active ? 'active' : ''}">
+                <div class="phone-msg-icon">${getPlatformSvg(m.platform)}</div>
+                <div>
+                    <div class="phone-msg-text">${m.text}</div>
+                    <select class="phone-freq-select" onchange="phoneSetFreq(${m.id}, this.value)">
+                        ${FREQ_OPTS.map(o => `<option value="${o.v}" ${m.freq === o.v ? 'selected' : ''}>${o.l}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="phone-msg-toggle ${m.active ? 'on' : ''}" onclick="phoneToggleMessage(${m.id})"></div>
+            </div>`).join('');
+    }
+
     function phoneSetFaction(name) {
         currentFaction = name;
         updateFactionPills(name);
@@ -783,6 +989,20 @@
                 }
             }
 
+            // ── Sync ticker messages from server to localStorage and phone view ──
+            // This ensures phone sees messages saved on PC
+            if (data.ticker_messages && Array.isArray(data.ticker_messages)) {
+                const serverMsgs = data.ticker_messages;
+                const localMsgs  = getTickerMessages();
+                // Only update if server has messages and they differ from local
+                if (serverMsgs.length > 0 && JSON.stringify(serverMsgs) !== JSON.stringify(localMsgs)) {
+                    localStorage.setItem('hll_ticker_messages', JSON.stringify(serverMsgs));
+                    renderMsgList();
+                    renderPreview();
+                }
+                renderPhoneMsgList();
+            }
+
         } catch(e) {
             const s = document.getElementById('phoneStatus');
             if (s) s.textContent = 'SERVER OFFLINE';
@@ -792,6 +1012,177 @@
     // Sync all UI every 2 seconds on every device
     syncAllUI();
     setInterval(syncAllUI, 2000);
+    // ── TICKER MESSAGES ──────────────────────────────────────────────────
+    let selectedPlatform = { platform: 'general', icon: 'general' };
+    let selectedFreq = 'every_loop';
+
+    const FREQ_LABELS = {
+        every_loop:  'Every loop',
+        every_3:     'Every 3 loops',
+        every_5:     'Every 5 loops',
+        every_10:    'Every 10 loops',
+        every_2min:  'Every 2 min',
+        every_5min:  'Every 5 min'
+    };
+
+    const PLATFORM_COLORS = {
+        twitch: '#9146ff', youtube: '#ff0000', tiktok: '#ffffff',
+        twitter: '#ffffff', discord: '#5865f2', instagram: '#e1306c', general: '#ff9d00'
+    };
+
+    const PLATFORM_SVGS = {
+        general:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="#ff9d00"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>`,
+        twitch:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="#9146ff"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>`,
+        youtube:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>`,
+        tiktok:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.2 8.2 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>`,
+        twitter:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>`,
+        discord:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="#5865f2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`,
+        instagram: `<svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig2" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#f09433"/><stop offset="50%" style="stop-color:#dc2743"/><stop offset="100%" style="stop-color:#bc1888"/></linearGradient></defs><path fill="url(#ig2)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>`,
+    };
+
+    function getPlatformSvg(platform) {
+        return PLATFORM_SVGS[platform] || PLATFORM_SVGS.general;
+    }
+
+    function getTickerMessages() {
+        try { return JSON.parse(localStorage.getItem('hll_ticker_messages') || '[]'); }
+        catch(e) { return []; }
+    }
+
+    function setTickerMessages(msgs) {
+        localStorage.setItem('hll_ticker_messages', JSON.stringify(msgs));
+        pushTickerMessagesToServer(msgs);
+    }
+
+    async function pushTickerMessagesToServer(msgs) {
+        try {
+            await fetch(`${SERVER}/config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticker_messages: msgs })
+            });
+        } catch(e) {}
+    }
+
+    function selectPlatform(el) {
+        document.querySelectorAll('.msg-platform-btn').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedPlatform = { platform: el.dataset.platform, icon: el.dataset.icon };
+    }
+
+    function selectFreq(el) {
+        document.querySelectorAll('.msg-freq-btn').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedFreq = el.dataset.freq;
+    }
+
+    function addTickerMessage() {
+        const text = document.getElementById('msgText').value.trim();
+        if (!text) {
+            const hint = document.getElementById('msgHint');
+            hint.textContent = 'Type a message first'; hint.style.color = '#ff3c3c';
+            setTimeout(() => { hint.textContent = 'Injected into Top 5 & Top 10 scroll banners'; hint.style.color = ''; }, 2000);
+            return;
+        }
+        const msgs = getTickerMessages();
+        msgs.push({
+            id:       Date.now(),
+            platform: selectedPlatform.platform,
+            icon:     selectedPlatform.platform,
+            text,
+            freq:     selectedFreq,
+            active:   true
+        });
+        setTickerMessages(msgs);
+        document.getElementById('msgText').value = '';
+        renderMsgList();
+        renderPreview();
+        const hint = document.getElementById('msgHint');
+        hint.textContent = '✓ Message added to ticker'; hint.style.color = 'var(--green)';
+        setTimeout(() => { hint.textContent = 'Injected into Top 5 & Top 10 scroll banners'; hint.style.color = ''; }, 2000);
+    }
+
+    function toggleMessage(id) {
+        const msgs = getTickerMessages();
+        const m = msgs.find(m => m.id === id);
+        if (m) m.active = !m.active;
+        setTickerMessages(msgs);
+        renderMsgList();
+        renderPreview();
+    }
+
+    function deleteMessage(id) {
+        const msgs = getTickerMessages().filter(m => m.id !== id);
+        setTickerMessages(msgs);
+        renderMsgList();
+        renderPreview();
+    }
+
+    function renderMsgList() {
+        const msgs = getTickerMessages();
+        const el = document.getElementById('msgList');
+        if (!el) return;
+        if (!msgs.length) {
+            el.innerHTML = '<div class="no-msg-hint">No messages saved yet — add one above</div>';
+            return;
+        }
+        el.innerHTML = msgs.map(m => `
+            <div class="msg-item ${m.active ? 'active' : ''}">
+                <div class="msg-item-icon">${getPlatformSvg(m.platform)}</div>
+                <div class="msg-item-info">
+                    <div class="msg-item-name">${m.text}</div>
+                    <div class="msg-item-freq">${FREQ_LABELS[m.freq] || m.freq}</div>
+                </div>
+                <div class="msg-toggle ${m.active ? 'on' : ''}" onclick="toggleMessage(${m.id})" title="${m.active ? 'Click to disable' : 'Click to enable'}"></div>
+                <button type="button" class="msg-del-btn" onclick="deleteMessage(${m.id})">✕</button>
+            </div>`).join('');
+    }
+
+    function renderPreview() {
+        const msgs = getTickerMessages().filter(m => m.active);
+        const inner = document.getElementById('msgPreviewInner');
+        if (!inner) return;
+        if (!msgs.length) {
+            inner.innerHTML = `
+                <div class="msg-preview-entry"><span class="msg-preview-icon">${getPlatformSvg('general')}</span><span class="msg-preview-text" style="color:rgba(255,255,255,0.3)">No active messages — toggle one on above</span></div>
+                <div class="msg-preview-entry"><span class="msg-preview-icon">${getPlatformSvg('general')}</span><span class="msg-preview-text" style="color:rgba(255,255,255,0.3)">No active messages — toggle one on above</span></div>`;
+            return;
+        }
+        const entries = [
+            { type: 'player', rank: 1, name: 'PlayerOne', kills: 24 },
+            { type: 'player', rank: 2, name: 'PlayerTwo', kills: 19 },
+            ...msgs.map(m => ({ type: 'msg', platform: m.platform, text: m.text })),
+            { type: 'player', rank: 3, name: 'PlayerThree', kills: 15 },
+        ];
+        const buildEntry = e => {
+            if (e.type === 'player') return `
+                <div class="msg-preview-entry">
+                    <span class="msg-preview-text" style="color:#ff9d00;font-weight:900">${e.rank}</span>
+                    <span class="msg-preview-text">${e.name}</span>
+                    <span style="color:#ff9d00;font-size:11px;font-weight:bold">K: ${e.kills}</span>
+                    <span class="msg-preview-divider"> // </span>
+                </div>`;
+            const color = PLATFORM_COLORS[e.platform] || '#ff9d00';
+            return `
+                <div class="msg-preview-entry" style="background:rgba(0,0,0,0.4);border-left:3px solid ${color};padding-left:12px">
+                    <span class="msg-preview-icon">${getPlatformSvg(e.platform)}</span>
+                    <span class="msg-preview-text" style="color:${color}">${e.text}</span>
+                    <span class="msg-preview-divider"> // </span>
+                </div>`;
+        };
+        const html = entries.map(buildEntry).join('');
+        inner.innerHTML = html + html;
+    }
+
+    // Init on load
+    renderMsgList();
+    renderPreview();
+    renderPhoneMsgList();
+
+    // Push messages to server on load AND every 5 seconds
+    pushTickerMessagesToServer(getTickerMessages());
+    setInterval(() => pushTickerMessagesToServer(getTickerMessages()), 5000);
+
 </script>
 </body>
 </html>

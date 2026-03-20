@@ -4,8 +4,12 @@ Serves all HTML files and handles config read/write for the hub.
 Run via start.bat — do not close the terminal window while streaming.
 """
 
-import json, os, threading, socket, urllib.request, shutil
+import json, os, threading, socket, urllib.request, shutil, sys
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+
+# Always run from the folder this script lives in
+# This ensures downloads and file reads go to the right place
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # ── AUTO-UPDATER ──────────────────────────────────────────────────────────────
 GITHUB_RAW   = "https://raw.githubusercontent.com/odeyrayyan-gif/HLL-OVERLAY/main/"
@@ -23,6 +27,7 @@ UPDATABLE_FILES = [
     "DO_NOT_EDIT_killstreaks.html",
     "DO_NOT_EDIT_killfeed.html",
     "DO_NOT_EDIT_tank_scoreboard.html",
+    "DO_NOT_EDIT_melee_leaderboard.html",
 ]
 
 def get_local_version():
@@ -62,6 +67,10 @@ def check_for_updates():
         print("  Could not reach update server — skipping update check.")
         return False
 
+    # Debug — show exact bytes so any whitespace issues are visible
+    print(f"  Local  version: [{local}] ({len(local)} chars)")
+    print(f"  Remote version: [{remote}] ({len(remote)} chars)")
+
     if remote == local:
         print(f"  Up to date (v{local})")
         return False
@@ -84,15 +93,34 @@ def check_for_updates():
     if failed:
         print(f"  Failed: {', '.join(failed)}")
 
-    # Show changelog if available
+    # Show changelog for the new version only
     try:
         changelog_url = GITHUB_RAW + "changelog.md?t=" + str(os.times()[4])
         with urllib.request.urlopen(changelog_url, timeout=5) as r:
-            changelog = r.read().decode().strip()
+            changelog = r.read().decode()
+
+        # Extract only the section for the new version
+        lines = changelog.split("\n")
+        capture = False
+        section = []
+        for line in lines:
+            if line.strip() == f"## v{remote}":
+                capture = True
+                continue
+            if capture:
+                # Stop at the next version header
+                if line.startswith("## v"):
+                    break
+                section.append(line)
+
         print()
-        print("  ── WHAT'S NEW " + "─" * 40)
-        for line in changelog.split("\n")[:20]:  # show up to 20 lines
-            print(f"  {line}")
+        print(f"  ── WHAT'S NEW IN v{remote} " + "─" * 30)
+        if section:
+            for line in section:
+                if line.strip():
+                    print(f"  {line}")
+        else:
+            print(f"  See changelog.md for full details.")
         print("  " + "─" * 54)
     except:
         pass
@@ -157,6 +185,7 @@ class HLLHandler(SimpleHTTPRequestHandler):
             "/kills.html":                        "/DO_NOT_EDIT_killstreaks.html",
             "/killfeed.html":                     "/DO_NOT_EDIT_killfeed.html",
             "/tank_scoreboard.html":              "/DO_NOT_EDIT_tank_scoreboard.html",
+            "/melee_leaderboard.html":            "/DO_NOT_EDIT_melee_leaderboard.html",
         }
         if path in LEGACY:
             self.send_response(302)
@@ -230,7 +259,7 @@ class HLLHandler(SimpleHTTPRequestHandler):
             with open(CONFIG_FILE, "r") as f:
                 return json.load(f)
         except:
-            return {"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES"}
+            return {"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES", "ticker_messages": []}
 
     def write_config(self, data):
         existing = self.read_config()
@@ -268,7 +297,7 @@ if __name__ == "__main__":
     # Make sure config and player files exist
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "w") as f:
-            json.dump({"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES"}, f, indent=2)
+            json.dump({"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES", "ticker_messages": []}, f, indent=2)
     if not os.path.exists(PLAYER_FILE):
         with open(PLAYER_FILE, "w") as f:
             f.write("")
