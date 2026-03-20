@@ -133,7 +133,7 @@
     }
 
     // Weapons containing these are ALWAYS artillery — never armor/infantry
-    const ARTY_OVERRIDES = ["howitzer", "150mm", "105mm", "155mm", "lefh", "sfh", "artillery"];
+    const ARTY_OVERRIDES = ["howitzer", "150mm", "105mm", "155mm", "lefh", "sfh", "artillery", "brumm", "stuh", "strumpanzer"];
 
     function getKills(players, cat) {
         let count = 0;
@@ -175,7 +175,7 @@
 
     // Exclude armor crews and artillery gunners from infantry lists
     const EXCLUDED_WEAPONS_LIST = [
-        'artillery','lefh','155mm','150mm','105mm','howitzer','pak40','anti_tank',
+        'artillery','lefh','155mm','150mm','105mm','howitzer','brumm','stuh','strumpanzer','pak40','anti_tank',
         'zis3','88mm','75mm','76mm','tank','mine'
     ];
     function isArtyOrArmor(p) {

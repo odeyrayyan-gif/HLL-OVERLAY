@@ -209,7 +209,14 @@
 
     // ── Tank weapon signatures ──
     const TANK_WEAPONS = [
-        // German
+        // German — bracket-specific matches first to avoid false Sherman matches
+        { key: "sd.kfz.181",      name: "Tiger"       },
+        { key: "tiger i]",        name: "Tiger"       },
+        { key: "panzer iv]",      name: "Panzer IV"   },
+        { key: "panther]",        name: "Panther"     },
+        { key: "sd.kfz.171",      name: "Panther"     },
+        { key: "sd.kfz.161",      name: "Panzer IV"   },
+        { key: "sd.kfz.234",      name: "Puma"        },
         { key: "88mm kwk",        name: "Tiger"       },
         { key: "75mm kwk 42",     name: "Panther"     },
         { key: "75mm kwk 40",     name: "Panzer IV"   },
@@ -219,7 +226,12 @@
         { key: "75mm pak",        name: "Marder"      },
         { key: "pak 40",          name: "PAK40"       },
         { key: "pak40",           name: "PAK40"       },
-        // US
+        // US — bracket-specific matches first
+        { key: "sherman m4a3e2(76)", name: "Sherman 76" },
+        { key: "m4a3e2",          name: "Green Bean"  },
+        { key: "jumbo",            name: "Green Bean"  },
+        { key: "sherman m4a3",    name: "Sherman 75"  },
+        { key: "stuart m5a1",     name: "Stuart"      },
         { key: "76mm m1",         name: "Sherman 76"  },
         { key: "75mm m3",         name: "Sherman 75"  },
         { key: "75mm cannon",     name: "Sherman 75"  },
@@ -299,7 +311,7 @@
     const ARTILLERY_KEYWORDS = [
         "howitzer", "artillery", "lefh", "155mm", "105mm",
         "m114", "m2a1", "mlrs", "katyusha", "pak 43",
-        "zis-3", "zis3"
+        "zis-3", "zis3", "brumm", "stuh", "strumpanzer"
     ];
 
     function isArmorCrew(p) {
