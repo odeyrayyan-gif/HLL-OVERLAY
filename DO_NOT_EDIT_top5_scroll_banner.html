@@ -26,13 +26,7 @@
         .ticker-move {
             display: flex;
             white-space: nowrap;
-            /* 30s speed - higher is slower */
-            animation: ticker-loop 30s linear infinite;
-        }
-
-        @keyframes ticker-loop {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); } 
+            will-change: transform;
         }
 
         .player-entry {
@@ -87,7 +81,7 @@
 
     // Exclude armor crews and artillery gunners from infantry lists
     const EXCLUDED_WEAPONS_LIST = [
-        'artillery','lefh','155mm','150mm','105mm','howitzer','brumm','stuh','strumpanzer','pak40','anti_tank',
+        'artillery','lefh','155mm','150mm','105mm','howitzer','pak40','anti_tank',
         'zis3','88mm','75mm','76mm','tank','mine'
     ];
     function isArtyOrArmor(p) {
@@ -97,6 +91,26 @@
         if (!top) return false;
         return EXCLUDED_WEAPONS_LIST.some(ex => top[0].toLowerCase().includes(ex));
     }
+    // ── JS-driven scroll — never resets, content updates silently ──
+    const SPEED = 80; // pixels per second
+    let scrollX   = 0;
+    let lastTime  = null;
+    let halfWidth = 0;
+    let rafId     = null;
+
+    function scrollTick(ts) {
+        if (lastTime !== null) {
+            const dt = ts - lastTime;
+            scrollX += (SPEED * dt) / 1000;
+            if (halfWidth > 0 && scrollX >= halfWidth) {
+                scrollX -= halfWidth;
+            }
+            document.getElementById('ticker').style.transform = `translateX(${-scrollX}px)`;
+        }
+        lastTime = ts;
+        rafId = requestAnimationFrame(scrollTick);
+    }
+
     async function updateTicker() {
         try {
             const endpoint = cachedEndpoint;
@@ -111,7 +125,7 @@
                     .filter(p => !isArtyOrArmor(p))
                     .sort((a, b) => b.kills - a.kills)
                     .slice(0, 5);
-                
+
                 const playerHtml = topKillers.map((p, index) => `
                     <div class="player-entry">
                         <span class="rank">${index + 1}</span>
@@ -122,43 +136,24 @@
                     </div>
                 `).join('');
 
-                // Build message HTML for active messages that should show this loop
                 let msgHtml = '';
                 const active = getActiveMessages().filter(m => shouldShowMessage(m));
                 active.forEach(m => { msgHtml += buildMessageHtml(m); markMessageShown(m); });
-
-                // Increment loop count
                 loopCount++;
 
-                const ticker = document.getElementById('ticker');
+                const ticker   = document.getElementById('ticker');
                 const combined = playerHtml + msgHtml;
-                const newHtml  = combined + combined;
 
-                // Only update DOM if content changed — prevents animation restart
                 if (ticker.dataset.lastHash !== combined) {
                     ticker.dataset.lastHash = combined;
-
-                    // Capture current animation progress so we can resume from same position
-                    const style     = window.getComputedStyle(ticker);
-                    const matrix    = new WebKitCSSMatrix(style.transform);
-                    const currX     = matrix.m41;
-                    const totalW    = ticker.scrollWidth / 2 || 1;
-                    const progress  = Math.abs(currX) / totalW;
-
-                    ticker.style.animation = 'none';
-                    ticker.innerHTML = newHtml;
-
-                    // Force reflow then restart animation from same relative position
+                    ticker.innerHTML = combined + combined;
                     void ticker.offsetWidth;
-                    const duration = parseFloat(ticker.closest('.ticker-wrap')
-                        ?.querySelector('.ticker-move')?.style.animationDuration) ||
-                        30;
-                    const delay = -(progress * duration);
-                    ticker.style.animation = `ticker-loop ${duration}s ${delay}s linear infinite`;
+                    halfWidth = ticker.scrollWidth / 2;
+                    if (halfWidth > 0) scrollX = scrollX % halfWidth;
                 }
             }
-        } catch (e) { 
-            console.error("Ticker update failed"); 
+        } catch (e) {
+            console.error("Ticker update failed");
         }
     }
 
@@ -232,7 +227,10 @@
             }
         } catch(e) { console.warn("[HLL] pollConfig failed:", e.message); }
     }
-    pollConfig().then(() => updateTicker());
+    pollConfig().then(() => {
+        updateTicker();
+        rafId = requestAnimationFrame(scrollTick);
+    });
     setInterval(pollConfig, 1000);
     setInterval(updateTicker, 4000);
 </script>
