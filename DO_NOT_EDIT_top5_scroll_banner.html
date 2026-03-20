@@ -132,8 +132,30 @@
 
                 const ticker = document.getElementById('ticker');
                 const combined = playerHtml + msgHtml;
-                // Duplicate for seamless infinite loop
-                ticker.innerHTML = combined + combined;
+                const newHtml  = combined + combined;
+
+                // Only update DOM if content changed — prevents animation restart
+                if (ticker.dataset.lastHash !== combined) {
+                    ticker.dataset.lastHash = combined;
+
+                    // Capture current animation progress so we can resume from same position
+                    const style     = window.getComputedStyle(ticker);
+                    const matrix    = new WebKitCSSMatrix(style.transform);
+                    const currX     = matrix.m41;
+                    const totalW    = ticker.scrollWidth / 2 || 1;
+                    const progress  = Math.abs(currX) / totalW;
+
+                    ticker.style.animation = 'none';
+                    ticker.innerHTML = newHtml;
+
+                    // Force reflow then restart animation from same relative position
+                    void ticker.offsetWidth;
+                    const duration = parseFloat(ticker.closest('.ticker-wrap')
+                        ?.querySelector('.ticker-move')?.style.animationDuration) ||
+                        30;
+                    const delay = -(progress * duration);
+                    ticker.style.animation = `ticker-loop ${duration}s ${delay}s linear infinite`;
+                }
             }
         } catch (e) { 
             console.error("Ticker update failed"); 
@@ -149,7 +171,8 @@
     let lastMsgTime      = {};  // id → last shown timestamp
 
     function getActiveMessages() {
-        return tickerMessages.filter(m => m.active);
+        // Only show messages targeted at the scroll ticker
+        return tickerMessages.filter(m => m.active && (!m.target || m.target === "ticker"));
     }
 
     function shouldShowMessage(m) {
@@ -161,6 +184,9 @@
             case 'every_10':    return loopCount % 10 === 0;
             case 'every_2min':  return !lastMsgTime[m.id] || now - lastMsgTime[m.id] >= 120000;
             case 'every_5min':  return !lastMsgTime[m.id] || now - lastMsgTime[m.id] >= 300000;
+            case 'every_10min': return !lastMsgTime[m.id] || now - lastMsgTime[m.id] >= 600000;
+            case 'every_15min': return !lastMsgTime[m.id] || now - lastMsgTime[m.id] >= 900000;
+            case 'every_30min': return !lastMsgTime[m.id] || now - lastMsgTime[m.id] >= 1800000;
             default: return true;
         }
     }
