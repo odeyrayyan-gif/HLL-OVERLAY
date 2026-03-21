@@ -185,14 +185,15 @@ const REFRESH = 3000;
 const EXCLUDED_WEAPONS = [
     'artillery', 'lefh_18', 'm1_155mm', 'pak40', 'm5_anti_tank', 'zis3',
     'marder_iii', 'is2_122mm', 'tiger_88mm', 'panther_75mm', 'm4a3e8_76mm',
-    'm4a3e8_75mm', 'firefly_17pdr', 'stuart_37mm', 'puma_50mm', 'lux_20mm'
+    'm4a3e8_75mm', 'firefly_17pdr', 'stuart_37mm', 'puma_50mm', 'lux_20mm',
+    'brumm', 'stuh', 'strumpanzer', 'kv-2', 'm-10t', '152mm', '122mm', 'sherman spa'
 ];
 
 function normalize(n){ return String(n||"").toLowerCase().trim(); }
 
 async function fetchNoCache(url){
     const separator = url.includes("?") ? "&" : "?";
-    return fetch(url + separator + "t=" + Date.now(), {cache:"no-store"});
+    return fetch(url + separator + "t=" + Date.now(), {cache:"no-store", headers:{"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"}});
 }
 
 // Updated to read JSON for settings, but keep plain text for PLAYER_FILE
@@ -254,7 +255,7 @@ function render(p){
 
     // Exclude armor crews and artillery gunners from infantry lists
     const EXCLUDED_WEAPONS_LIST = [
-        'artillery','lefh','155mm','150mm','105mm','howitzer','pak40','anti_tank',
+        'artillery','lefh','155mm','152mm','150mm','122mm','105mm','howitzer','brumm','stuh','strumpanzer','pak40','anti_tank',
         'zis3','88mm','75mm','76mm','tank','mine'
     ];
     function isArtyOrArmor(p) {

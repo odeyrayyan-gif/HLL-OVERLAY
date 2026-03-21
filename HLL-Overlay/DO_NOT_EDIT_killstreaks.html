@@ -149,7 +149,7 @@ let baselineCount = 0; // Must complete 2 baseline polls before tracking
 
 async function fetchNoCache(url) {
     const sep = url.includes("?") ? "&" : "?";
-    return fetch(url + sep + "t=" + Date.now(), { cache: "no-store" });
+    return fetch(url + sep + "t=" + Date.now(), { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" } });
 }
 
 async function getEndpoint() {
@@ -162,8 +162,8 @@ async function getEndpoint() {
 }
 
 const ARTY_EXCLUSIONS = [
-    "howitzer", "artillery", "150mm", "155mm", "105mm", "lefh", "sfh",
-    "katyusha", "mlrs", "zis-3", "zis3"
+    "howitzer", "artillery", "150mm", "155mm", "152mm", "122mm", "105mm", "lefh", "sfh",
+    "katyusha", "mlrs", "zis-3", "zis3", "brumm", "stuh", "strumpanzer"
 ];
 
 function isArtillery(p) {

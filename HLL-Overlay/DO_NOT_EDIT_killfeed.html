@@ -148,7 +148,8 @@
     const AXIS_SIGS = [
         "kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
         "p38","luger","walther","stielhandgranate",
-        "tiger","panzer","puma","lux","marder","lefh","pak40","panzerfaust"
+        "tiger","panzer","puma","lux","marder","lefh","sfh","150mm","pak40","panzerfaust",
+        "brumm","stuh","strumpanzer","kv-2","m-10t","152mm","sherman spa"
     ];
 
     let cachedConfig = { api_endpoint: "", swap_sides: false, allied_faction: "ALLIES" };
@@ -286,6 +287,10 @@
         // Soviet Tanks
         "122mm d-25t":              "IS-2 122",
         "122mm":                    "IS-2 122",
+        "kv-2":                     "KV-2 SPA",
+        "m-10t":                    "KV-2 SPA",
+        "152mm":                    "KV-2 SPA",
+        "sherman spa":              "Sherman SPA",
         "76mm zis-5":               "T34 76",
         "t34":                      "T34",
         "is 2":                     "IS-2",
@@ -381,7 +386,7 @@
         }
         try {
             const sep = api.includes("?") ? "&" : "?";
-            const res = await fetch(api + sep + "t=" + Date.now(), { cache: "no-store" });
+            const res = await fetch(api + sep + "t=" + Date.now(), { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" } });
             if (!res.ok) throw new Error(res.status);
             const data    = await res.json();
             const players = data?.result?.stats || [];

@@ -28,6 +28,7 @@ UPDATABLE_FILES = [
     "DO_NOT_EDIT_killfeed.html",
     "DO_NOT_EDIT_tank_scoreboard.html",
     "DO_NOT_EDIT_melee_leaderboard.html",
+    "DO_NOT_EDIT_message_banner.html",
 ]
 
 def get_local_version():
@@ -186,6 +187,7 @@ class HLLHandler(SimpleHTTPRequestHandler):
             "/killfeed.html":                     "/DO_NOT_EDIT_killfeed.html",
             "/tank_scoreboard.html":              "/DO_NOT_EDIT_tank_scoreboard.html",
             "/melee_leaderboard.html":            "/DO_NOT_EDIT_melee_leaderboard.html",
+            "/message_banner.html":               "/DO_NOT_EDIT_message_banner.html",
         }
         if path in LEGACY:
             self.send_response(302)

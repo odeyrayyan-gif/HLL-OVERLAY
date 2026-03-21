@@ -56,7 +56,7 @@
 
 <script>
     const CONFIG_URL = "http://localhost:3000/config";
-    const AXIS_SIGS = ["kar98", "mp40", "mg34", "mg42", "stg44", "fg42", "gewehr", "zf41", "p38", "luger", "walther", "stielhandgranate", "tiger", "panzer", "puma", "lux", "marder", "lefh", "pak40", "panzerfaust"];
+    const AXIS_SIGS = ["kar98", "mp40", "mg34", "mg42", "stg44", "fg42", "gewehr", "zf41", "p38", "luger", "walther", "stielhandgranate", "tiger", "panzer", "puma", "lux", "marder", "lefh", "sfh", "150mm", "pak40", "panzerfaust", "brumm", "stuh", "strumpanzer"];
     
     const CAT_MAP = {
         infantry: ["garand", "thompson", "carbine", "springfield", "m1911", "grease", "sten", "enfield", "mosin", "ppsh", "svt40", "tokarev", "nagant", "kar98", "mp40", "stg44", "gewehr", "p38", "luger", "walther", "stielhandgranate"],
@@ -69,7 +69,7 @@
     };
 
     async function fetchNoCache(url) {
-        return fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" }).then(r => r.json());
+        return fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" } }).then(r => r.json());
     }
     async function getConfig() {
         return fetch(CONFIG_URL).then(r => r.json());
@@ -83,7 +83,7 @@
     }
 
     // Weapons containing these are ALWAYS artillery — never armor/infantry
-    const ARTY_OVERRIDES = ["howitzer", "150mm", "105mm", "155mm", "lefh", "sfh", "artillery"];
+    const ARTY_OVERRIDES = ["howitzer", "150mm", "105mm", "155mm", "152mm", "122mm", "lefh", "sfh", "artillery", "brumm", "stuh", "strumpanzer"];
 
     function getKills(players, cat) {
         let count = 0;
