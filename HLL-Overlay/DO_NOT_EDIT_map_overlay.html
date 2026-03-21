@@ -138,17 +138,50 @@
     function getKills(players, cat) {
         let count = 0;
         players.forEach(p => {
-            if (cat === 'armor') count += (p.v_kills || 0);
-            if (p.weapons) Object.entries(p.weapons).forEach(([n, v]) => {
+            // Armor: only count v_kills from actual tank crew (not AT infantry)
+            if (cat === 'armor') {
+                if ((p.v_kills || 0) > 0 && p.weapons) {
+                    const wKeys = Object.keys(p.weapons).join(' ').toLowerCase();
+                    const TANK_SIGS = ['tiger','panzer','panther','puma','lux','marder',
+                        'sherman','stuart','firefly','is2','t-34','t34','sd.kfz',
+                        '75mm kwk','76mm m1','88mm kwk','122mm d-25','50mm kwk',
+                        '20mm kwk','17 pounder','76mm zis','76mm f-34'];
+                    const AT_SIGS = ['bazooka','panzerschreck','piat','panzerfaust',
+                        'zis-3','pak40','anti_tank','m5 at'];
+                    const isAtInfantry = AT_SIGS.some(k => wKeys.includes(k));
+                    const isTankCrew   = TANK_SIGS.some(k => wKeys.includes(k));
+                    if (isTankCrew && !isAtInfantry) count += (p.v_kills || 0);
+                }
+                return;
+            }
+            if (!p.weapons) {
+                // No weapon data — if infantry, use full kills as fallback
+                if (cat === 'infantry') count += (p.kills || 0);
+                return;
+            }
+            // Tally kills per weapon into categories
+            let artyKills = 0, mgKills = 0, rocketKills = 0, sniperKills = 0, satchelKills = 0;
+            Object.entries(p.weapons).forEach(([n, v]) => {
                 const nl = n.toLowerCase();
                 const isArty = ARTY_OVERRIDES.some(k => nl.includes(k));
-                // Artillery weapons only count toward artillery category
-                if (isArty) {
-                    if (cat === "artillery") count += v;
-                    return;
-                }
-                if (CAT_MAP[cat].some(k => nl.includes(k))) count += v;
+                if (isArty) { artyKills += v; return; }
+                if (CAT_MAP.mg.some(k => nl.includes(k)))      { mgKills += v; return; }
+                if (CAT_MAP.rocket.some(k => nl.includes(k)))  { rocketKills += v; return; }
+                if (CAT_MAP.sniper.some(k => nl.includes(k)))  { sniperKills += v; return; }
+                if (CAT_MAP.satchel.some(k => nl.includes(k))) { satchelKills += v; return; }
             });
+            const totalKills    = Number(p.kills || 0);
+            const otherCatKills = artyKills + mgKills + rocketKills + sniperKills + satchelKills;
+            // Infantry = total kills minus kills from all other tracked categories
+            // Note: v_kills is vehicle destructions (not crew kills) so we do NOT subtract it
+            // Crew kills from vehicle weapons are already captured in weapon kill counts above
+            const infantryKills = Math.max(0, totalKills - otherCatKills);
+            if (cat === 'infantry')  { count += infantryKills; return; }
+            if (cat === 'artillery') { count += artyKills; return; }
+            if (cat === 'mg')        { count += mgKills; return; }
+            if (cat === 'rocket')    { count += rocketKills; return; }
+            if (cat === 'sniper')    { count += sniperKills; return; }
+            if (cat === 'satchel')   { count += satchelKills; return; }
         });
         return count;
     }

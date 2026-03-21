@@ -1,5 +1,10 @@
 # HLL Command Hub — Changelog
 
+## v1.1.2
+- Fixed infantry kill counting in Team Comparison and Map Overlay — previously only kills from explicitly listed weapon keywords were counted, missing grenades, shovels, pistols and any unlisted weapon
+- Infantry now counted as total kills minus vehicle kills minus other tracked categories (MG, sniper, AT, satchel, artillery) — matches the same logic used by the Top 5 and Top 10 scroll banners
+- This means infantry totals in team comparison will now be consistent with the ticker leaderboards
+
 ## v1.1.1
 - All 6 artillery and SPA weapons now correctly identified and excluded across every overlay
   - Allied fixed: 155mm Howitzer (M114), 122mm Howitzer (M-30)
