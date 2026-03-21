@@ -1,5 +1,16 @@
 # HLL Command Hub — Changelog
 
+## v1.1.1
+- All 6 artillery and SPA weapons now correctly identified and excluded across every overlay
+  - Allied fixed: 155mm Howitzer (M114), 122mm Howitzer (M-30)
+  - Axis fixed: 150mm Howitzer (sFH 18)
+  - Allied SPA: Sherman SPA 105mm, KV-2 152mm
+  - Axis SPA: Brummbar (Strumpanzer IV) — shows as "Brummbar SPA" in kill feed
+- Fixed German artillery players (sFH 18, Brummbar) being misassigned to Allied team when CRCON team field is absent — kills now count toward correct Axis artillery total in team comparison and map overlay
+- Added 122mm and 152mm to exclusion lists across all overlays so Soviet artillery is never counted as infantry
+- KV-2 and Sherman SPA now show correct names in kill feed
+- Tank scoreboard now correctly excludes KV-2, Sherman SPA and all SPA variants from armor panels
+
 ## v1.1.0
 - Top 5 and Top 10 scroll banners now use JS-driven scrolling (requestAnimationFrame) instead of CSS animation — completely seamless, never resets or jumps when stats or messages update
 - All overlays now send a proper browser User-Agent header with API requests — fixes OPNsense WAP firewall blocks that some server admins may have

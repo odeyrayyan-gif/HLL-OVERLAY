@@ -3,25 +3,5 @@
   "swap_sides": false,
   "player": "",
   "allied_faction": "ALLIES",
-  "api_logs_endpoint": "",
-  "ticker_messages": [
-    {
-      "id": 1774023550442,
-      "platform": "youtube",
-      "icon": "youtube",
-      "text": "subscribe",
-      "freq": "test_5sec",
-      "target": "banner",
-      "active": false
-    },
-    {
-      "id": 1774033036034,
-      "platform": "youtube",
-      "icon": "youtube",
-      "text": "be sure to hit the like button",
-      "freq": "every_loop",
-      "target": "ticker",
-      "active": true
-    }
-  ]
+  "api_logs_endpoint": ""
 }
