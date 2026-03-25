@@ -12,7 +12,7 @@ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # ── AUTO-UPDATER ──────────────────────────────────────────────────────────────
-GITHUB_RAW   = "https://raw.githubusercontent.com/odeyrayyan-gif/HLL-OVERLAY/main/"
+GITHUB_RAW   = "https://raw.githubusercontent.com/odeyrayyan-gif/HLL-OVERLAY-CHANNEL-PROD/main/"
 VERSION_FILE = "version.txt"
 
 UPDATABLE_FILES = [
@@ -30,6 +30,8 @@ UPDATABLE_FILES = [
     "DO_NOT_EDIT_melee_leaderboard.html",
     "DO_NOT_EDIT_message_banner.html",
     "changelog.md",
+    "start.bat",
+    "README.txt",
 ]
 
 def get_local_version():
@@ -95,51 +97,34 @@ def check_for_updates():
     if failed:
         print(f"  Failed: {', '.join(failed)}")
 
-    # Show changelog for all versions between local and remote
+    # Show changelog for the new version only
     try:
         changelog_url = GITHUB_RAW + "changelog.md?t=" + str(os.times()[4])
         with urllib.request.urlopen(changelog_url, timeout=5) as r:
             changelog = r.read().decode()
 
-        # Parse all version sections from changelog
+        # Extract only the section for the new version
         lines = changelog.split("\n")
-        sections = {}   # version string → list of lines
-        current_ver = None
+        capture = False
+        section = []
         for line in lines:
-            if line.startswith("## v"):
-                current_ver = line.strip()[3:]  # e.g. "1.1.2"
-                sections[current_ver] = []
-            elif current_ver:
-                sections[current_ver].append(line)
-
-        # Collect all versions newer than local up to and including remote
-        def ver_tuple(v):
-            try: return tuple(int(x) for x in v.split("."))
-            except: return (0,)
-
-        local_t  = ver_tuple(local)
-        remote_t = ver_tuple(remote)
-        new_versions = sorted(
-            [v for v in sections if local_t < ver_tuple(v) <= remote_t],
-            key=ver_tuple
-        )
+            if line.strip() == f"## v{remote}":
+                capture = True
+                continue
+            if capture:
+                # Stop at the next version header
+                if line.startswith("## v"):
+                    break
+                section.append(line)
 
         print()
-        if len(new_versions) > 1:
-            print(f"  ── UPDATES FROM v{local} TO v{remote} " + "─" * 20)
-        else:
-            print(f"  ── WHAT'S NEW IN v{remote} " + "─" * 30)
-
-        for ver in new_versions:
-            if len(new_versions) > 1:
-                print(f"\n  v{ver}:")
-            content = [l for l in sections[ver] if l.strip()]
-            if content:
-                for line in content:
+        print(f"  ── WHAT'S NEW IN v{remote} " + "─" * 30)
+        if section:
+            for line in section:
+                if line.strip():
                     print(f"  {line}")
-            else:
-                print(f"  See changelog.md for details.")
-
+        else:
+            print(f"  See changelog.md for full details.")
         print("  " + "─" * 54)
     except:
         pass
@@ -150,6 +135,7 @@ def check_for_updates():
     input("  Press Enter to exit...")
     raise SystemExit(0)
 
+# ─────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────────────────────────────────
 
 CONFIG_FILE  = "DO_NOT_EDIT_settings.json"
@@ -169,6 +155,9 @@ class HLLHandler(SimpleHTTPRequestHandler):
         err = sys.exc_info()[1]
         if isinstance(err, (ConnectionResetError, BrokenPipeError, ConnectionAbortedError)):
             return  # Normal — ignore cleanly
+        # Also ignore Windows-specific socket errors (WinError 10053, 10054)
+        if isinstance(err, OSError) and hasattr(err, 'winerror') and err.winerror in (10053, 10054):
+            return
         # For anything else, print it so real bugs are visible
         print(f"  [!] Unexpected error from {client_address}: {err}")
 
@@ -222,7 +211,98 @@ class HLLHandler(SimpleHTTPRequestHandler):
             name = self.read_player()
             self.send_json({"player": name})
             return
+        # ── /gamestate — proxy get_gamestate from CRCON ──
+        if path == "/gamestate":
+            try:
+                cfg = self.read_config()
+                endpoint = cfg.get("api_endpoint", "")
+                if not endpoint:
+                    self.send_json({"result": None})
+                    return
+                from urllib.parse import urlparse
+                base_url = "{0.scheme}://{0.netloc}".format(urlparse(endpoint))
+                url = base_url + "/api/get_gamestate?t=" + str(os.times()[4])
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    data = json.loads(r.read().decode())
+                self.send_json(data)
+            except Exception as e:
+                self.send_json({"result": None, "error": str(e)})
+            return
+
+        # ── /teamview — proxy get_team_view from CRCON ──
+        if path == "/teamview":
+            try:
+                cfg = self.read_config()
+                endpoint = cfg.get("api_endpoint", "")
+                if not endpoint:
+                    self.send_json({"result": None})
+                    return
+                from urllib.parse import urlparse
+                base_url = "{0.scheme}://{0.netloc}".format(urlparse(endpoint))
+                url = base_url + "/api/get_team_view?t=" + str(os.times()[4])
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    data = json.loads(r.read().decode())
+                self.send_json(data)
+            except Exception as e:
+                self.send_json({"result": None, "error": str(e)})
+            return
+
+        # ── /players — proxy live player list from CRCON to avoid CORS ──
+        if path == "/players":
+            try:
+                cfg = self.read_config()
+                endpoint = cfg.get("api_endpoint", "")
+                if not endpoint:
+                    self.send_json({"players": []})
+                    return
+                sep = "&" if "?" in endpoint else "?"
+                url = endpoint + sep + "t=" + str(os.times()[4])
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=5) as r:
+                    data = json.loads(r.read().decode())
+                stats = data.get("result", {}).get("stats", [])
+                self.send_json({"players": stats})
+            except Exception as e:
+                self.send_json({"players": []})
+            return
+
+        # ── /stats — proxy full CRCON stats response for overlays ──
+        if path == "/stats":
+            try:
+                cfg = self.read_config()
+                endpoint = cfg.get("api_endpoint", "")
+                if not endpoint:
+                    self.send_json({"result": None})
+                    return
+                sep = "&" if "?" in endpoint else "?"
+                url = endpoint + sep + "t=" + str(os.times()[4])
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    data = json.loads(r.read().decode())
+                self.send_json(data)
+            except Exception as e:
+                self.send_json({"result": None, "error": str(e)})
+            return
         # ── Serve static files normally ──
+        # Add no-cache headers for HTML files so updates show immediately
+        if path.endswith('.html'):
+            self.send_response(200)
+            self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
+            self.send_cors_headers()
+            try:
+                with open(path.lstrip('/'), 'rb') as f:
+                    content = f.read()
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Content-Length', len(content))
+                self.end_headers()
+                self.wfile.write(content)
+            except:
+                super().do_GET()
+            return
         super().do_GET()
 
     def do_POST(self):
@@ -275,17 +355,31 @@ class HLLHandler(SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
     def read_config(self):
-        try:
-            with open(CONFIG_FILE, "r") as f:
-                return json.load(f)
-        except:
-            return {"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES", "ticker_messages": []}
+        # Retry up to 3 times to handle race conditions during writes
+        for attempt in range(3):
+            try:
+                with open(CONFIG_FILE, "r") as f:
+                    content = f.read().strip()
+                if not content:
+                    import time; time.sleep(0.05)
+                    continue
+                data = json.loads(content)
+                # Only return if we got a valid config with expected fields
+                if isinstance(data, dict):
+                    return data
+            except (json.JSONDecodeError, IOError):
+                import time; time.sleep(0.05)
+        return {"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES", "ticker_messages": [], "saved_servers": [], "top5_freq": "indefinite", "top10_freq": "indefinite", "stat_mode": "combat", "banner_stat_mode": "combat"}
 
     def write_config(self, data):
         existing = self.read_config()
         existing.update(data)
-        with open(CONFIG_FILE, "w") as f:
+        # Atomic write — write to temp file then rename to avoid partial reads
+        tmp = CONFIG_FILE + ".tmp"
+        with open(tmp, "w") as f:
             json.dump(existing, f, indent=2)
+        import os
+        os.replace(tmp, CONFIG_FILE)
 
     def read_player(self):
         try:
@@ -317,14 +411,22 @@ if __name__ == "__main__":
     # Make sure config and player files exist
     if not os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "w") as f:
-            json.dump({"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES", "ticker_messages": []}, f, indent=2)
+            json.dump({"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES", "ticker_messages": [], "saved_servers": [], "top5_freq": "indefinite", "top10_freq": "indefinite", "stat_mode": "combat", "banner_stat_mode": "combat"}, f, indent=2)
     if not os.path.exists(PLAYER_FILE):
         with open(PLAYER_FILE, "w") as f:
             f.write("")
 
     ip = get_local_ip()
-    server = ThreadingHTTPServer(("", PORT), HLLHandler)
-    server.allow_reuse_address = True
+    try:
+        server = ThreadingHTTPServer(("", PORT), HLLHandler)
+        server.allow_reuse_address = True
+    except OSError:
+        print(f"  [!] Port {PORT} is already in use.")
+        print(f"  [!] Another instance may already be running.")
+        print(f"  [!] Check your taskbar or close any existing terminal windows.")
+        print()
+        input("  Press Enter to exit...")
+        raise SystemExit(1)
 
     print("=" * 55)
     print("  HLL OVERLAY SERVER — RUNNING")
@@ -333,6 +435,7 @@ if __name__ == "__main__":
     print(f"  Hub (phone):    http://{ip}:{PORT}")
     print(f"  OBS sources:    http://localhost:{PORT}/DO_NOT_EDIT_team_compare.html  etc.")
     print("=" * 55)
+    print("  All overlays synced via local server.")
     print("  Keep this window open while streaming.")
     print("  Press Ctrl+C to stop.\n")
 

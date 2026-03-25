@@ -149,7 +149,7 @@
         "kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
         "p38","luger","walther","stielhandgranate",
         "tiger","panzer","puma","lux","marder","lefh","sfh","150mm","pak40","panzerfaust",
-        "brumm","stuh","strumpanzer","kv-2","m-10t","152mm","sherman spa"
+        "howitzer","sfh","howitzer","sfh","brumm","stuh","strumpanzer","kv-2","m-10t","152mm","sherman spa"
     ];
 
     let cachedConfig = { api_endpoint: "", swap_sides: false, allied_faction: "ALLIES" };
@@ -301,6 +301,9 @@
         "105mm m2a1":               "105mm Arty",
         "105mm":                    "105mm Arty",
         "lefh 18":                  "leFH18 Arty",
+        "stuh 43":                  "Brummbar SPA",
+        "brummbar":                 "Brummbar SPA",
+        "strumpanzer":              "Brummbar SPA",
         "lefh":                     "leFH18 Arty",
         "zis 3":                    "ZiS-3 Arty",
         "zis3":                     "ZiS-3 Arty",
@@ -386,7 +389,7 @@
         }
         try {
             const sep = api.includes("?") ? "&" : "?";
-            const res = await fetch(api + sep + "t=" + Date.now(), { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" } });
+            const res = await fetch(api + sep + "t=" + Date.now(), { cache: "no-store" });
             if (!res.ok) throw new Error(res.status);
             const data    = await res.json();
             const players = data?.result?.stats || [];

@@ -284,27 +284,23 @@ BOX 4 — SPOTLIGHT PLAYER
   Updates within 1-2 seconds of typing.
 
 BOX 5 — TICKER MESSAGES
-  Add custom messages that appear either in the Top 5
-  and Top 10 Scroll Banners or as a standalone Message
-  Banner overlay.
+  Add custom messages that appear inside the Top 5 and
+  Top 10 Scroll Banner overlays between player entries.
 
   HOW TO USE ON PC:
   1. Pick a platform icon (Twitch, YouTube, Discord etc.)
-  2. Choose Show In — Scroll Banners or Message Banner
-  3. Type your message text
-  4. Choose frequency — loop-based options for scroll
-     banners, time-based options for message banner
-     (includes a ⚡ Test mode every 5 sec for OBS setup)
-  5. Click Add Message to Ticker
-  6. Use the toggle on each saved message to turn it
+  2. Type your message text
+  3. Choose how often it appears (every loop, every 5
+     loops, every 2 minutes etc.)
+  4. Click Add Message to Ticker
+  5. Use the toggle on each saved message to turn it
      on or off without deleting it
-  7. The live preview updates to match the selected
-     destination — scrolling ticker or card-style banner
+  6. The live preview strip shows exactly how it will
+     look inside the ticker
 
-  Scroll banner messages appear between player entries
-  with a platform-colored accent bar.
-  Message Banner messages bounce in as a floating card
-  above the ticker and fade out after 4 seconds.
+  Messages are styled differently from player entries
+  with a platform-colored accent bar so viewers can
+  clearly tell them apart from kill stats.
 
   CONTROLLING FROM YOUR PHONE:
   Once messages are saved on the PC hub they appear in
@@ -356,7 +352,6 @@ All overlays use one of two canvas sizes:
   │ Kill Streak Alerts                   │          │          │
   │ Kill Feed                            │          │          │
   │ Tank Scoreboard                      │          │          │
-  │ Message Banner                       │          │          │
   └──────────────────────────────────────┴──────────┴──────────┘
 
   ┌──────────────────────────────────────┬──────────┬──────────┐
@@ -447,18 +442,6 @@ TANK SCOREBOARD
   kills and K/D. Sorted by infantry kills.
   Artillery crews are excluded. Updates every 4 seconds.
 
-MESSAGE BANNER
-  A fully transparent overlay that shows custom messages
-  saved in Box 5 of the hub. Completely invisible until
-  a message fires — bounces in with a snap animation
-  then slowly fades out after 4 seconds.
-  Messages must be set to "Message Banner" in Box 5.
-  Supports time-based frequencies: every 2/5/10/15/30
-  minutes. Includes a Test mode (every 5 sec) for
-  positioning the card in OBS before going live.
-  Add at 1920x1080 and position so the bottom sits
-  just above your ticker banner.
-
 
 ================================================================
   FILES IN THIS FOLDER
@@ -485,7 +468,6 @@ MESSAGE BANNER
   DO_NOT_EDIT_killstreaks.html       Kill Streak Alerts overlay
   DO_NOT_EDIT_killfeed.html          Kill Feed overlay
   DO_NOT_EDIT_tank_scoreboard.html   Tank Scoreboard overlay
-  DO_NOT_EDIT_message_banner.html    Message Banner overlay
   changelog.md                       Update history
   version.txt                        Current version
 
@@ -546,19 +528,27 @@ Kill Feed shows "Enemy" instead of a victim name
   SHARING THIS WITH OTHERS
 ================================================================
 
-Zip the entire HLL-Overlay folder and share it.
-Each person needs to do two things:
+The easiest way is to share the install.bat file.
+Each person just needs to:
 
-  1. Install Python (see STEP 1 above)
-  2. Find their own API URL (see STEP 2 above)
+  1. Download install.bat
+  2. Double-click it
+  3. It installs Python automatically if needed,
+     downloads all files to C:\HLL-Overlay, creates
+     a desktop shortcut, and opens the hub
 
-Everything else works straight out of the folder.
-Updates happen automatically when they run start.bat.
+  They will need their own API URL (see STEP 2 above)
+  Everything else is handled automatically.
+  Updates happen every time start.bat is run.
+
+If install.bat is not available, zip the HLL-Overlay
+folder and share it. They will need Python installed
+manually (see STEP 1 above) and their own API URL.
 
 
 ================================================================
   VERSION
 ================================================================
-  HLL Command Hub v1.1.0
+  HLL Command Hub v1.0.6
   Local server build — internet required during use
 ================================================================

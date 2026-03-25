@@ -3,28 +3,48 @@ title HLL Overlay Server
 cd /d "%~dp0"
 echo.
 
-:: Check if Python is installed
-python --version >nul 2>&1
-if errorlevel 1 (
+:: ── Find Python ──────────────────────────────────────────────────
+set PYTHON_EXE=
+
+:: 1. Check installer hint file first
+if exist "%~dp0python_path.txt" (
+    set /p PYTHON_EXE=<"%~dp0python_path.txt"
+)
+
+:: 2. Add common Python locations to PATH
+set "PATH=%LOCALAPPDATA%\Programs\Python\Python314;%LOCALAPPDATA%\Programs\Python\Python314\Scripts;%PATH%"
+set "PATH=%LOCALAPPDATA%\Programs\Python\Python313;%LOCALAPPDATA%\Programs\Python\Python313\Scripts;%PATH%"
+set "PATH=%LOCALAPPDATA%\Programs\Python\Python312;%LOCALAPPDATA%\Programs\Python\Python312\Scripts;%PATH%"
+set "PATH=%LOCALAPPDATA%\Programs\Python\Python311;%LOCALAPPDATA%\Programs\Python\Python311\Scripts;%PATH%"
+set "PATH=%LOCALAPPDATA%\Programs\Python\Python310;%LOCALAPPDATA%\Programs\Python\Python310\Scripts;%PATH%"
+set "PATH=C:\Python314;C:\Python313;C:\Python312;C:\Python311;C:\Python310;%PATH%"
+
+:: 3. Verify Python works
+if defined PYTHON_EXE (
+    "%PYTHON_EXE%" --version >nul 2>&1
+    if errorlevel 1 set PYTHON_EXE=
+)
+if not defined PYTHON_EXE (
+    python --version >nul 2>&1
+    if not errorlevel 1 set PYTHON_EXE=python
+)
+if not defined PYTHON_EXE (
+    py --version >nul 2>&1
+    if not errorlevel 1 set PYTHON_EXE=py
+)
+
+:: 4. If still not found, show error
+if not defined PYTHON_EXE (
     echo  ============================================================
     echo   ERROR: Python not found!
     echo  ============================================================
     echo.
     echo   HOW TO INSTALL PYTHON:
     echo.
-    echo   1. Open your browser and go to:
-    echo      https://www.python.org/downloads/
-    echo.
-    echo   2. Click the big yellow "Download Python" button
-    echo.
-    echo   3. Run the installer that downloads
-    echo.
-    echo   4. IMPORTANT: On the first screen of the installer,
-    echo      tick the box that says "Add Python to PATH"
-    echo      before clicking Install Now
-    echo.
-    echo   5. Once installed, close this window and
-    echo      double-click start.bat again
+    echo   1. Go to: https://www.python.org/downloads/
+    echo   2. Download and run the installer
+    echo   3. IMPORTANT: Check "Add Python to PATH" on the first screen
+    echo   4. Close this window and double-click the shortcut again
     echo.
     echo  ============================================================
     pause
@@ -38,5 +58,8 @@ echo   Hub:  http://localhost:3000
 echo   Keep this window open while streaming.
 echo  ============================================================
 echo.
-python DO_NOT_EDIT_server.py
+
+:: Start browser after short delay, then run server
+start /b cmd /c "timeout /t 2 /nobreak >nul && start "" http://localhost:3000"
+"%PYTHON_EXE%" DO_NOT_EDIT_server.py
 pause

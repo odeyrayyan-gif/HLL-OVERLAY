@@ -104,6 +104,9 @@
         .msg-platform-btn:hover { border-color: var(--border-bright); }
         .msg-platform-btn.selected { border-color: var(--red); background: rgba(172,46,46,0.1); }
         .msg-freq-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .stat-mode-btn { padding: 7px 4px; background: #070a0f; border: 1px solid #2d3748; border-radius: 6px; color: #718096; font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; text-align: center; cursor: pointer; transition: all 0.15s; }
+        .stat-mode-btn:hover { border-color: #4a5568; color: #a0aec0; }
+        .stat-mode-btn.selected { border-color: var(--red); background: rgba(172,46,46,0.1); color: white; }
         .msg-freq-btn {
             padding: 8px; background: #070a0f; border: 1px solid var(--border);
             border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.2s;
@@ -279,7 +282,7 @@
     <div class="header">
         <div class="header-eyebrow">Hell Let Loose · Overlay System</div>
         <h1>HLL <span>COMMAND</span> HUB</h1>
-        <div class="header-sub">Local Server · v3.0</div>
+        <div class="header-sub">Local Server · V2.0</div>
         <div class="header-line"></div>
     </div>
 
@@ -390,7 +393,19 @@
             <div class="section-title">Spotlight Player</div>
             <div class="section-hint" id="spotlightHint">Updates overlay within 3 seconds</div>
         </div>
-        <input type="text" id="player" placeholder="Type part of a player name..." oninput="onPlayerInput()">
+        <div style="position:relative;">
+            <input type="text" id="player" placeholder="Type part of a player name..." oninput="onPlayerInput()" autocomplete="off">
+            <div id="playerSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:#0d1117;border:1px solid #2e3a48;border-radius:6px;margin-top:4px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
+        </div>
+        <div style="margin-top:12px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Stat Display</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;" id="statModeGroup">
+                <div class="stat-mode-btn selected" data-stat="combat"  onclick="setStatMode(this)">Combat</div>
+                <div class="stat-mode-btn" data-stat="defense" onclick="setStatMode(this)">Defense</div>
+                <div class="stat-mode-btn" data-stat="support" onclick="setStatMode(this)">Support</div>
+                <div class="stat-mode-btn" data-stat="offense" onclick="setStatMode(this)">Offense</div>
+            </div>
+        </div>
     </div>
 
     <!-- OBS LINKS -->
@@ -454,19 +469,15 @@
             </div>
         </div>
 
-        <!-- Frequency — options change based on target -->
-        <label class="input-label" style="margin-top:8px">Show Frequency</label>
-        <div class="msg-freq-group" id="freqGroup">
-            <div class="msg-freq-btn selected" data-freq="every_loop" data-show="ticker" onclick="selectFreq(this)">Every Loop</div>
-            <div class="msg-freq-btn" data-freq="every_3" data-show="ticker" onclick="selectFreq(this)">Every 3 Loops</div>
-            <div class="msg-freq-btn" data-freq="every_5" data-show="ticker" onclick="selectFreq(this)">Every 5 Loops</div>
-            <div class="msg-freq-btn" data-freq="every_10" data-show="ticker" onclick="selectFreq(this)">Every 10 Loops</div>
-            <div class="msg-freq-btn" data-freq="every_2min" onclick="selectFreq(this)">Every 2 Min</div>
-            <div class="msg-freq-btn" data-freq="every_5min" onclick="selectFreq(this)">Every 5 Min</div>
-            <div class="msg-freq-btn" data-freq="every_10min" data-show="banner" onclick="selectFreq(this)" style="display:none">Every 10 Min</div>
-            <div class="msg-freq-btn" data-freq="every_15min" data-show="banner" onclick="selectFreq(this)" style="display:none">Every 15 Min</div>
-            <div class="msg-freq-btn" data-freq="every_30min" data-show="banner" onclick="selectFreq(this)" style="display:none">Every 30 Min</div>
-            <div class="msg-freq-btn" data-freq="test_5sec" data-show="banner" onclick="selectFreq(this)" style="display:none;border-color:rgba(0,255,136,0.3);color:var(--green)">⚡ Test (5 sec)</div>
+        <!-- Frequency — only shown for message banner target -->
+        <div id="freqGroup" style="display:none;margin-top:8px;">
+            <label class="input-label">Show Frequency</label>
+            <div class="msg-freq-group">
+                <div class="msg-freq-btn selected" data-freq="every_10min" onclick="selectFreq(this)">Every 10 Min</div>
+                <div class="msg-freq-btn" data-freq="every_15min" onclick="selectFreq(this)">Every 15 Min</div>
+                <div class="msg-freq-btn" data-freq="every_30min" onclick="selectFreq(this)">Every 30 Min</div>
+                <div class="msg-freq-btn" data-freq="test_5sec" onclick="selectFreq(this)" style="border-color:rgba(0,255,136,0.3);color:var(--green)">⚡ Test (5 sec)</div>
+            </div>
         </div>
 
         <!-- Add button -->
@@ -474,6 +485,43 @@
 
         <!-- Saved messages list -->
         <div class="msg-list" id="msgList"></div>
+
+        <!-- Banner frequency controls -->
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Scroll Banner Stat</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;" id="bannerStatModeGroup">
+                <div class="stat-mode-btn selected" data-stat="combat"  onclick="setBannerStat(this)">Combat</div>
+                <div class="stat-mode-btn" data-stat="defense" onclick="setBannerStat(this)">Defense</div>
+                <div class="stat-mode-btn" data-stat="support" onclick="setBannerStat(this)">Support</div>
+                <div class="stat-mode-btn" data-stat="offense" onclick="setBannerStat(this)">Offense</div>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;">
+            <div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Top 5 Banner Frequency</div>
+                <select style="width:100%;padding:6px 8px;background:#070a0f;border:1px solid #2d3748;color:#a0aec0;border-radius:6px;font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;letter-spacing:1px;"
+                    onchange="setBannerFreq('top5_freq', this.value)" id="top5FreqSelect">
+                    <option value="indefinite">Always On</option>
+                    <option value="5min">Every 5 Min</option>
+                    <option value="10min">Every 10 Min</option>
+                    <option value="15min">Every 15 Min</option>
+                    <option value="20min">Every 20 Min</option>
+                    <option value="25min">Every 25 Min</option>
+                </select>
+            </div>
+            <div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a5568;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Top 10 Banner Frequency</div>
+                <select style="width:100%;padding:6px 8px;background:#070a0f;border:1px solid #2d3748;color:#a0aec0;border-radius:6px;font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;letter-spacing:1px;"
+                    onchange="setBannerFreq('top10_freq', this.value)" id="top10FreqSelect">
+                    <option value="indefinite">Always On</option>
+                    <option value="5min">Every 5 Min</option>
+                    <option value="10min">Every 10 Min</option>
+                    <option value="15min">Every 15 Min</option>
+                    <option value="20min">Every 20 Min</option>
+                    <option value="25min">Every 25 Min</option>
+                </select>
+            </div>
+        </div>
 
         <!-- Live preview -->
         <div class="msg-preview-wrap">
@@ -489,6 +537,7 @@
 
     <div class="section">
         <div class="overlays-header">
+            <div class="section-num">6</div>
             <div class="overlays-title">OBS Browser Sources</div>
             <div class="overlays-line"></div>
             <div class="overlays-count">11 OVERLAYS</div>
@@ -509,25 +558,6 @@
     <div class="phone-status">
         <div class="phone-status-dot" id="phoneDot"></div>
         <div class="phone-status-text" id="phoneStatus">Loading...</div>
-    </div>
-
-    <div class="phone-card">
-        <div class="phone-label">
-            <div class="phone-label-num">1</div>
-            Allied Faction
-            <span class="phone-hint" id="phoneFactionHint">tap to select</span>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px;">
-            <div class="phone-pill" id="phone-faction-us" onclick="phoneSetFaction('US ARMY')" style="padding:10px 6px;">
-                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">US ARMY</div>
-            </div>
-            <div class="phone-pill" id="phone-faction-british" onclick="phoneSetFaction('BRITISH')" style="padding:10px 6px;">
-                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">BRITISH</div>
-            </div>
-            <div class="phone-pill" id="phone-faction-soviet" onclick="phoneSetFaction('SOVIETS')" style="padding:10px 6px;">
-                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">SOVIETS</div>
-            </div>
-        </div>
     </div>
 
     <div class="phone-card">
@@ -559,20 +589,46 @@
     <div class="phone-card">
         <div class="phone-label">
             <div class="phone-label-num">3</div>
+            Allied Faction
+            <span class="phone-hint" id="phoneFactionHint">tap to select</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px;">
+            <div class="phone-pill" id="phone-faction-us" onclick="phoneSetFaction('US ARMY')" style="padding:10px 6px;">
+                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">US ARMY</div>
+            </div>
+            <div class="phone-pill" id="phone-faction-british" onclick="phoneSetFaction('BRITISH')" style="padding:10px 6px;">
+                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">BRITISH</div>
+            </div>
+            <div class="phone-pill" id="phone-faction-soviet" onclick="phoneSetFaction('SOVIETS')" style="padding:10px 6px;">
+                <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:1px;">SOVIETS</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="phone-card">
+        <div class="phone-label">
+            <div class="phone-label-num">4</div>
             Spotlight Player
             <span class="phone-hint" id="phoneSpotlightHint">type to search</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px;" id="phoneStatModeGroup">
+            <div class="stat-mode-btn selected" data-stat="combat"  onclick="setStatMode(this, true)">CMB</div>
+            <div class="stat-mode-btn" data-stat="defense" onclick="setStatMode(this, true)">DEF</div>
+            <div class="stat-mode-btn" data-stat="support" onclick="setStatMode(this, true)">SUP</div>
+            <div class="stat-mode-btn" data-stat="offense" onclick="setStatMode(this, true)">OFF</div>
         </div>
         <input type="text" class="phone-input" id="phone-player"
             placeholder="Part of player name..."
             oninput="onPhonePlayerInput()"
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <div id="phoneSuggestions" style="display:none;background:#0d1117;border:1px solid #2e3a48;border-radius:6px;margin-top:4px;overflow:hidden;"></div>
         <button class="phone-clear" onclick="clearPhonePlayer()">✕ Clear — Show Top Killer</button>
     </div>
 
     <!-- Phone: Ticker Messages -->
     <div class="phone-card" id="phone-msg-card">
         <div class="phone-label">
-            <div class="phone-label-num">4</div>
+            <div class="phone-label-num">5</div>
             Ticker Messages
             <span class="phone-hint">toggle &amp; frequency</span>
         </div>
@@ -585,17 +641,18 @@
     const SERVER = `http://${window.location.hostname}:3000`;
 
     const VIEWS = [
-        { n: "Team Comparison",   f: "DO_NOT_EDIT_team_compare.html",              icon: "⚔️"  },
-        { n: "AT Leaderboard",    f: "DO_NOT_EDIT_at_leaderboard.html",          icon: "🚀"  },
-        { n: "Player Spotlight",  f: "DO_NOT_EDIT_player_spotlight.html",          icon: "🎯"  },
-        { n: "Top 5 Scroll Banner",  f: "DO_NOT_EDIT_top5_scroll_banner.html",  icon: "📊"  },
-        { n: "Top 10 Scroll Banner", f: "DO_NOT_EDIT_top10_scroll_banner.html", icon: "📋"  },
-        { n: "Live Map",          f: "DO_NOT_EDIT_map_overlay.html", icon: "🗺️" },
-        { n: "Kill Streaks",      f: "DO_NOT_EDIT_killstreaks.html",               icon: "💀"  },
-        { n: "Kill Feed",          f: "DO_NOT_EDIT_killfeed.html",                  icon: "🎯"  },
-        { n: "Tank Scoreboard",    f: "DO_NOT_EDIT_tank_scoreboard.html",            icon: "🛡️"  },
-        { n: "Melee Leaderboard",  f: "DO_NOT_EDIT_melee_leaderboard.html",          icon: "🔪"  },
-        { n: "Message Banner",     f: "DO_NOT_EDIT_message_banner.html",             icon: "💬"  }
+        { n: "Team Comparison",      f: "DO_NOT_EDIT_team_compare.html",        icon: "⚔️",  w: 3840, h: 2160 },
+        { n: "AT Leaderboard",       f: "DO_NOT_EDIT_at_leaderboard.html",      icon: "🚀",  w: 3840, h: 2160 },
+        { n: "Player Spotlight",     f: "DO_NOT_EDIT_player_spotlight.html",    icon: "🎯",  w: 1920, h: 1080 },
+        { n: "Top 5 Scroll Banner",  f: "DO_NOT_EDIT_top5_scroll_banner.html",  icon: "📊",  w: 1920, h: 60   },
+        { n: "Top 10 Scroll Banner", f: "DO_NOT_EDIT_top10_scroll_banner.html", icon: "📋",  w: 1920, h: 60   },
+        { n: "Live Map",             f: "DO_NOT_EDIT_map_overlay.html",         icon: "🗺️",  w: 1920, h: 1080 },
+        { n: "Kill Streaks",         f: "DO_NOT_EDIT_killstreaks.html",         icon: "💀",  w: 1920, h: 1080 },
+        { n: "Kill Feed",            f: "DO_NOT_EDIT_killfeed.html",            icon: "🎯",  w: 1920, h: 1080 },
+        { n: "Tank Scoreboard",      f: "DO_NOT_EDIT_tank_scoreboard.html",     icon: "🛡️",  w: 1920, h: 1080 },
+        { n: "Melee Leaderboard",    f: "DO_NOT_EDIT_melee_leaderboard.html",   icon: "🔪",  w: 3840, h: 2160 },
+        { n: "Message Banner",       f: "DO_NOT_EDIT_message_banner.html",      icon: "💬",  w: 1920, h: 1080 },
+
     ];
 
     let saveTimer = null;
@@ -605,7 +662,7 @@
     async function saveConfig(hintId) {
         const hint = document.getElementById(hintId);
         hint.textContent = 'SAVING...';
-        hint.style.color = 'var(--text-mid)';
+        hint.style.color = '#718096';
         try {
             const res = await fetch(`${SERVER}/config`, {
                 method: 'POST',
@@ -618,8 +675,8 @@
             const json = await res.json();
             if (!json.ok) throw new Error();
             hint.textContent = '✓ SAVED';
-            hint.style.color = 'var(--green)';
-            setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = ''; }, 2000);
+            hint.style.color = '#00ff88';
+            setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = '#718096'; }, 2000);
         } catch(e) {
             hint.textContent = 'SAVE FAILED — is DO_NOT_EDIT_server.py running?';
             hint.style.color = '#ff3c3c';
@@ -630,7 +687,7 @@
     async function savePlayer(hintId) {
         const hint = document.getElementById(hintId);
         hint.textContent = 'SAVING...';
-        hint.style.color = 'var(--text-mid)';
+        hint.style.color = '#718096';
         try {
             const res = await fetch(`${SERVER}/player`, {
                 method: 'POST',
@@ -640,8 +697,8 @@
             const json = await res.json();
             if (!json.ok) throw new Error();
             hint.textContent = '✓ SAVED';
-            hint.style.color = 'var(--green)';
-            setTimeout(() => { hint.textContent = 'Updates overlay within 3 seconds'; hint.style.color = ''; }, 2000);
+            hint.style.color = '#00ff88';
+            setTimeout(() => { hint.textContent = 'Updates overlay within 3 seconds'; hint.style.color = '#718096'; }, 2000);
         } catch(e) {
             hint.textContent = 'SAVE FAILED — is DO_NOT_EDIT_server.py running?';
             hint.style.color = '#ff3c3c';
@@ -656,15 +713,15 @@
         currentFaction = name;
         updateFactionPills(name);
         const hint = document.getElementById('factionHint');
-        hint.textContent = 'saving...'; hint.style.color = 'var(--text-mid)';
+        hint.textContent = 'saving...'; hint.style.color = '#718096';
         fetch(`${SERVER}/config`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ allied_faction: name })
         }).then(() => {
             hint.textContent = '✓ saved — overlays updated';
-            hint.style.color = 'var(--green)';
-            setTimeout(() => { hint.textContent = 'Replaces labels in all overlays'; hint.style.color = ''; }, 2000);
+            hint.style.color = '#00ff88';
+            setTimeout(() => { hint.textContent = 'Replaces labels in all overlays'; hint.style.color = '#718096'; }, 2000);
         }).catch(() => {
             hint.textContent = 'SAVE FAILED';
             hint.style.color = '#ff3c3c';
@@ -718,7 +775,7 @@
         if (!url) {
             const hint = document.getElementById('apiHint');
             hint.textContent = 'Paste a URL first'; hint.style.color = '#ff3c3c';
-            setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = ''; }, 2000);
+            setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = '#718096'; }, 2000);
             return;
         }
         document.getElementById('serverName').value = '';
@@ -738,8 +795,8 @@
         renderServerDropdown(url);
         cancelSaveServer();
         const hint = document.getElementById('apiHint');
-        hint.textContent = `✓ Saved as "${name}"`; hint.style.color = 'var(--green)';
-        setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = ''; }, 2500);
+        hint.textContent = `✓ Saved as "${name}"`; hint.style.color = '#00ff88';
+        setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = '#718096'; }, 2500);
     }
 
     function cancelSaveServer() {
@@ -757,8 +814,8 @@
         setSavedServers(servers);
         renderServerDropdown('');
         const hint = document.getElementById('apiHint');
-        hint.textContent = `"${name}" removed`; hint.style.color = 'var(--text-mid)';
-        setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = ''; }, 2000);
+        hint.textContent = `"${name}" removed`; hint.style.color = '#718096';
+        setTimeout(() => { hint.textContent = 'Saved instantly to all overlays'; hint.style.color = '#718096'; }, 2000);
     }
 
     function onApiInput() {
@@ -774,9 +831,55 @@
         saveConfig('swapHint');
     }
 
+    let livePlayerList = [];
+
+    function scoreMatch(playerName, query) {
+        const pl = playerName.toLowerCase();
+        const ql = query.toLowerCase().trim();
+        if (!ql) return -1;
+        if (pl === ql) return 100;
+        if (pl.startsWith(ql)) return 90;
+        const sepIdx = pl.indexOf(ql);
+        if (sepIdx > 0 && ' |_.[('.includes(pl[sepIdx - 1])) return 80;
+        if (pl.includes(ql)) return 50;
+        return -1;
+    }
+
+    function renderPlayerSuggestions(query) {
+        const box = document.getElementById('playerSuggestions');
+        if (!box) return;
+        if (!query || !query.trim() || livePlayerList.length === 0) { box.style.display = 'none'; return; }
+        const scored = livePlayerList
+            .map(p => ({ p, score: scoreMatch(p.player, query) }))
+            .filter(x => x.score >= 0)
+            .sort((a, b) => b.score - a.score || b.p.kills - a.p.kills)
+            .slice(0, 6);
+        if (!scored.length) { box.style.display = 'none'; return; }
+        box.innerHTML = scored.map((x, i) => {
+            const isBest = i === 0 && x.score >= 80;
+            const name = x.p.player.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+            return '<div onclick="selectPlayerSuggestion(this)" data-name="' + name + '" style="padding:10px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1e2530;' + (isBest ? 'border-left:3px solid #ff9d00;' : '') + '">'
+                + '<div style="flex:1;color:white;font-weight:600;">' + x.p.player + '</div>'
+                + '<div style="font-size:10px;color:#4a5568;">K:' + x.p.kills + '</div>'
+                + (isBest ? '<div style="font-size:8px;color:#ff9d00;">BEST</div>' : '')
+                + '</div>';
+        }).join('');
+        box.style.display = 'block';
+    }
+
+    function selectPlayerSuggestion(el) {
+        const name = el.getAttribute('data-name');
+        document.getElementById('player').value = name;
+        const box = document.getElementById('playerSuggestions');
+        if (box) box.style.display = 'none';
+        savePlayer('spotlightHint');
+    }
+
     function onPlayerInput() {
         clearTimeout(saveTimer);
-        saveTimer = setTimeout(() => savePlayer('spotlightHint'), 150);
+        const query = document.getElementById('player').value;
+        renderPlayerSuggestions(query);
+        saveTimer = setTimeout(() => savePlayer('spotlightHint'), 400);
     }
 
     function updateStatus(apiVal) {
@@ -794,17 +897,52 @@
         }
     }
 
+    const BANNER_FREQ_OPTS = [
+        { v: 'indefinite', l: 'Always On'  },
+        { v: '5min',       l: 'Every 5 Min'  },
+        { v: '10min',      l: 'Every 10 Min' },
+        { v: '15min',      l: 'Every 15 Min' },
+        { v: '20min',      l: 'Every 20 Min' },
+        { v: '25min',      l: 'Every 25 Min' },
+    ];
+
     function renderLinks() {
         document.getElementById('output').innerHTML = VIEWS.map(v => {
             const url = `${SERVER}/${v.f}`;
+            const isTop5  = v.f === 'DO_NOT_EDIT_top5_scroll_banner.html';
+            const isTop10 = v.f === 'DO_NOT_EDIT_top10_scroll_banner.html';
+            const isBanner = isTop5 || isTop10;
+            const freqKey  = isTop5 ? 'top5_freq' : 'top10_freq';
+            const curFreq  = isBanner ? (bannerFreqs[freqKey] || 'indefinite') : null;
+
+            const freqSelector = '';
+
             return `
             <div class="link-card">
                 <div class="card-icon">${v.icon}</div>
                 <div class="card-name">${v.n}</div>
-                <div class="card-url">${url}</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <div class="card-url" style="margin-bottom:0;flex:1">${url}</div>
+                    <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#4a5568;letter-spacing:1px;white-space:nowrap;">${v.w} × ${v.h}</div>
+                </div>
+                ${freqSelector}
                 <button class="copy-btn" onclick="copyUrl(this, '${url}')">Copy OBS URL</button>
             </div>`;
         }).join('');
+    }
+
+    let bannerFreqs = { top5_freq: 'indefinite', top10_freq: 'indefinite' };
+
+    async function setBannerFreq(key, val) {
+        bannerFreqs[key] = val;
+        try {
+            await fetch(`${SERVER}/config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [key]: val })
+            });
+        } catch(e) {}
+        renderLinks();
     }
 
     function copyUrl(btn, url) {
@@ -828,6 +966,20 @@
             updateStatus(data.api_endpoint || '');
             renderServerDropdown(data.api_endpoint || '');
             if (data.allied_faction) { currentFaction = data.allied_faction; updateFactionPills(data.allied_faction); updatePhoneFactionPills(data.allied_faction); }
+            if (data.stat_mode) {
+                currentStatMode = data.stat_mode;
+                document.querySelectorAll('#statModeGroup .stat-mode-btn, #phoneStatModeGroup .stat-mode-btn').forEach(b => {
+                    b.classList.toggle('selected', b.dataset.stat === data.stat_mode);
+                });
+            }
+            if (data.banner_stat_mode) {
+                currentBannerStat = data.banner_stat_mode;
+                document.querySelectorAll('#bannerStatModeGroup .stat-mode-btn').forEach(b => {
+                    b.classList.toggle('selected', b.dataset.stat === data.banner_stat_mode);
+                });
+            }
+            if (data.top5_freq  !== undefined) { bannerFreqs.top5_freq  = data.top5_freq;  const s5  = document.getElementById('top5FreqSelect');  if (s5)  s5.value  = data.top5_freq; }
+            if (data.top10_freq !== undefined) { bannerFreqs.top10_freq = data.top10_freq; const s10 = document.getElementById('top10FreqSelect'); if (s10) s10.value = data.top10_freq; }
         } catch(e) {
             document.getElementById('statusText').textContent = 'SERVER OFFLINE — Run start.bat first!';
             document.getElementById('statusTag').textContent  = 'OFFLINE';
@@ -875,9 +1027,7 @@
             return;
         }
         const FREQ_OPTS = [
-            { v: 'every_loop',  l: 'Every loop'    },
-            { v: 'every_3',     l: 'Every 3 loops' },
-            { v: 'every_5',     l: 'Every 5 loops' },
+            { v: 'every_loop',  l: 'Always' },
             { v: 'every_10',    l: 'Every 10 loops'},
             { v: 'every_2min',  l: 'Every 2 min'   },
             { v: 'every_5min',  l: 'Every 5 min'   },
@@ -904,14 +1054,14 @@
         updateFactionPills(name);
         updatePhoneFactionPills(name);
         const hint = document.getElementById('phoneFactionHint');
-        hint.textContent = 'saving...'; hint.style.color = 'var(--text-mid)';
+        hint.textContent = 'saving...'; hint.style.color = '#718096';
         fetch(`${SERVER}/config`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ allied_faction: name })
         }).then(() => {
-            hint.textContent = '✓ saved'; hint.style.color = 'var(--green)';
-            setTimeout(() => { hint.textContent = 'tap to select'; hint.style.color = ''; }, 2000);
+            hint.textContent = '✓ saved'; hint.style.color = '#00ff88';
+            setTimeout(() => { hint.textContent = 'tap to select'; hint.style.color = '#718096'; }, 2000);
         });
     }
 
@@ -935,34 +1085,67 @@
         document.getElementById('phone-pill-standard').className = 'phone-pill' + (!val ? ' selected-allies' : '');
         document.getElementById('phone-pill-swapped').className  = 'phone-pill' + ( val ? ' selected-axis'  : '');
         const hint = document.getElementById('phoneSwapHint');
-        hint.textContent = 'saving...'; hint.style.color = 'var(--text-mid)';
+        hint.textContent = 'saving...'; hint.style.color = '#718096';
         saveConfig('swapHint').then(() => {
-            hint.textContent = '✓ saved'; hint.style.color = 'var(--green)';
-            setTimeout(() => { hint.textContent = 'tap to change'; hint.style.color = ''; }, 2000);
+            hint.textContent = '✓ saved'; hint.style.color = '#00ff88';
+            setTimeout(() => { hint.textContent = 'tap to change'; hint.style.color = '#718096'; }, 2000);
         });
     }
 
-    function onPhonePlayerInput() {
-        // Keep desktop input in sync
-        document.getElementById('player').value = document.getElementById('phone-player').value;
+    async function onPhonePlayerInput() {
+        const query = document.getElementById('phone-player').value;
+        document.getElementById('player').value = query;
+        if (livePlayerList.length === 0) {
+            try {
+                const pr = await fetch(`${SERVER}/players?t=${Date.now()}`, { cache: 'no-store' });
+                const pd = await pr.json();
+                if (pd && pd.players) livePlayerList = pd.players;
+            } catch(e) {}
+        }
+        const box = document.getElementById('phoneSuggestions');
+        if (box && query.trim() && livePlayerList.length > 0) {
+            const scored = livePlayerList
+                .map(p => ({ p, score: scoreMatch(p.player, query) }))
+                .filter(x => x.score >= 0)
+                .sort((a, b) => b.score - a.score || b.p.kills - a.p.kills)
+                .slice(0, 5);
+            if (scored.length) {
+                box.innerHTML = scored.map((x, i) => {
+                    const isBest = i === 0 && x.score >= 80;
+                    const name = x.p.player.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                    return '<div onclick="selectPhoneSuggestion(this)" ontouchend="selectPhoneSuggestion(this)" data-name="' + name + '" style="padding:14px;font-size:14px;cursor:pointer;border-bottom:1px solid #1e2530;color:white;' + (isBest ? 'border-left:3px solid #ff9d00;' : '') + '">' + x.p.player + ' <span style="font-size:10px;color:#4a5568;">K:' + x.p.kills + '</span></div>';
+                }).join('');
+                box.style.display = 'block';
+            } else { box.style.display = 'none'; }
+        } else if (box) { box.style.display = 'none'; }
         clearTimeout(phoneTimer);
         phoneTimer = setTimeout(async () => {
             const hint = document.getElementById('phoneSpotlightHint');
-            hint.textContent = 'saving...'; hint.style.color = 'var(--text-mid)';
+            hint.textContent = 'saving...';
             await savePlayer('spotlightHint');
-            hint.textContent = '✓ saved'; hint.style.color = 'var(--green)';
-            setTimeout(() => { hint.textContent = 'type to search'; hint.style.color = ''; }, 2000);
-        }, 150);
+            hint.textContent = '✓ saved';
+            setTimeout(() => { hint.textContent = 'type to search'; }, 2000);
+        }, 400);
+    }
+
+    function selectPhoneSuggestion(el) {
+        if (event) event.preventDefault();
+        const name = el.getAttribute('data-name');
+        document.getElementById('phone-player').value = name;
+        document.getElementById('player').value = name;
+        const box = document.getElementById('phoneSuggestions');
+        if (box) box.style.display = 'none';
+        savePlayer('spotlightHint');
     }
 
     async function clearPhonePlayer() {
         document.getElementById('phone-player').value = '';
         document.getElementById('player').value = '';
         const hint = document.getElementById('phoneSpotlightHint');
-        hint.textContent = 'clearing...'; hint.style.color = 'var(--text-mid)';
+        hint.textContent = 'clearing...'; hint.style.color = '#718096';
         await savePlayer('spotlightHint');
-        hint.textContent = '✓ cleared'; hint.style.color = 'var(--green)';
-        setTimeout(() => { hint.textContent = 'type to search'; hint.style.color = ''; }, 2000);
+        hint.textContent = '✓ cleared'; hint.style.color = '#00ff88';
+        setTimeout(() => { hint.textContent = 'type to search'; hint.style.color = '#718096'; }, 2000);
     }
 
     // Keep phone UI in sync with server state
@@ -991,6 +1174,13 @@
             const desktopInput = document.getElementById('player');
             if (document.activeElement !== desktopInput) {
                 desktopInput.value = data.player || '';
+            }
+            if (data.api_endpoint) {
+                try {
+                    const pr = await fetch(`${SERVER}/players?t=${Date.now()}`, { cache: 'no-store' });
+                    const pd = await pr.json();
+                    if (pd && pd.players) livePlayerList = pd.players;
+                } catch(e) {}
             }
 
 
@@ -1044,12 +1234,65 @@
         }
     }
 
+    let syncFailCount = 0;
+    const _origSyncAllUI = syncAllUI;
+    async function syncAllUIWithRetry() {
+        try {
+            await _origSyncAllUI();
+            syncFailCount = 0;
+        } catch(e) {
+            syncFailCount++;
+            if (syncFailCount >= 3) {
+                updateStatus('');
+            }
+        }
+    }
+
     // Sync all UI every 2 seconds on every device
-    syncAllUI();
-    setInterval(syncAllUI, 2000);
+    syncAllUIWithRetry();
+    setInterval(syncAllUIWithRetry, 2000);
+    window.addEventListener('load', function() {
+        document.addEventListener('click', function(e) {
+            const box = document.getElementById('playerSuggestions');
+            const inp = document.getElementById('player');
+            if (box && inp && !box.contains(e.target) && e.target !== inp) box.style.display = 'none';
+        });
+    });
     // ── TICKER MESSAGES ──────────────────────────────────────────────────
+    let currentStatMode = 'combat';
+
+    let currentBannerStat = 'combat';
+
+    function setBannerStat(el) {
+        const stat = el.dataset.stat;
+        currentBannerStat = stat;
+        document.querySelectorAll('#bannerStatModeGroup .stat-mode-btn').forEach(b => {
+            b.classList.toggle('selected', b.dataset.stat === stat);
+        });
+        fetch(`${SERVER}/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ banner_stat_mode: stat })
+        }).catch(() => {});
+    }
+
+    function setStatMode(el, isPhone) {
+        const stat = el.dataset.stat;
+        currentStatMode = stat;
+        // Sync both desktop and phone buttons
+        document.querySelectorAll('.stat-mode-btn').forEach(b => {
+            b.classList.toggle('selected', b.dataset.stat === stat);
+        });
+        // Save to server
+        fetch(`${SERVER}/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stat_mode: stat })
+        }).catch(() => {});
+    }
+
     let selectedPlatform = { platform: 'general', icon: 'general' };
-    let selectedFreq   = 'every_loop';
+    let selectedFreq   = 'every_loop'; // always 'every_loop' for ticker, timer-based for banner
     let selectedTarget = 'ticker';
 
 
@@ -1126,21 +1369,17 @@
     }
 
     function updateFreqOptions(target) {
-        const isTicker = target === 'ticker';
-        // Show/hide loop-only options
-        document.querySelectorAll('.msg-freq-btn[data-show="ticker"]').forEach(b => {
-            b.style.display = isTicker ? '' : 'none';
-        });
-        // Show/hide banner-only options
-        document.querySelectorAll('.msg-freq-btn[data-show="banner"]').forEach(b => {
-            b.style.display = isTicker ? 'none' : '';
-        });
-        // Reset selection to first visible option
-        const first = document.querySelector('.msg-freq-btn:not([style*="display: none"]):not([style*="display:none"])');
-        if (first) {
-            document.querySelectorAll('.msg-freq-btn').forEach(b => b.classList.remove('selected'));
-            first.classList.add('selected');
-            selectedFreq = first.dataset.freq;
+        const isBanner = target === 'banner';
+        // Show freq group only for banner
+        document.getElementById('freqGroup').style.display = isBanner ? '' : 'none';
+        // Reset freq
+        if (isBanner) {
+            selectedFreq = 'every_10min';
+            document.querySelectorAll('.msg-freq-btn').forEach(b => {
+                b.classList.toggle('selected', b.dataset.freq === 'every_10min');
+            });
+        } else {
+            selectedFreq = 'every_loop';
         }
     }
 
@@ -1149,7 +1388,7 @@
         if (!text) {
             const hint = document.getElementById('msgHint');
             hint.textContent = 'Type a message first'; hint.style.color = '#ff3c3c';
-            setTimeout(() => { hint.textContent = 'Injected into Top 5 & Top 10 scroll banners'; hint.style.color = ''; }, 2000);
+            setTimeout(() => { hint.textContent = 'Injected into Top 5 & Top 10 scroll banners'; hint.style.color = '#718096'; }, 2000);
             return;
         }
         const msgs = getTickerMessages();
@@ -1167,8 +1406,8 @@
         renderMsgList();
         renderPreview();
         const hint = document.getElementById('msgHint');
-        hint.textContent = '✓ Message added to ticker'; hint.style.color = 'var(--green)';
-        setTimeout(() => { hint.textContent = 'Injected into Top 5 & Top 10 scroll banners'; hint.style.color = ''; }, 2000);
+        hint.textContent = '✓ Message added to ticker'; hint.style.color = '#00ff88';
+        setTimeout(() => { hint.textContent = 'Injected into Top 5 & Top 10 scroll banners'; hint.style.color = '#718096'; }, 2000);
     }
 
     function toggleMessage(id) {

@@ -12,7 +12,7 @@
             --accent:    #ac2e2e;
             --border:    1px solid rgba(255,255,255,0.1);
             --panel-width:  520px;
-            --panel-height: 585px;
+            --panel-height: 650px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -209,29 +209,55 @@
 
     // ── Tank weapon signatures ──
     const TANK_WEAPONS = [
-        // German
-        { key: "88mm kwk",        name: "Tiger"       },
-        { key: "75mm kwk 42",     name: "Panther"     },
-        { key: "75mm kwk 40",     name: "Panzer IV"   },
-        { key: "75mm kwk37",      name: "Panzer IV"   },
-        { key: "50mm kwk 39",     name: "Puma"        },
-        { key: "20mm kwk",        name: "Lux"         },
-        { key: "75mm pak",        name: "Marder"      },
-        { key: "pak 40",          name: "PAK40"       },
-        { key: "pak40",           name: "PAK40"       },
-        // US
-        { key: "76mm m1",         name: "Sherman 76"  },
-        { key: "75mm m3",         name: "Sherman 75"  },
-        { key: "75mm cannon",     name: "Sherman 75"  },
-        { key: "37mm",            name: "Stuart"      },
-        // British
-        { key: "17 pounder",      name: "Firefly"     },
-        { key: "17pdr",           name: "Firefly"     },
-        // Soviet
-        { key: "122mm",           name: "IS-2"        },
-        { key: "76mm zis",        name: "T-34/76"     },
-        { key: "76mm f-34",       name: "T-34/76"     },
-    ];
+        // ── GERMAN ──
+        { key: "sd.kfz.181",        name: "Tiger I"       },  // Panzer VI Ausf. H1
+        { key: "sd.kfz.171",        name: "Panther"       },  // Panzer V Ausf. G
+        { key: "sd.kfz.161",        name: "Panzer IV"     },  // Panzer IV Ausf. G
+        { key: "sd.kfz.234",        name: "Puma"          },  // Recon
+        { key: "sd.kfz.121",        name: "Luchs"         },  // Panzer II Ausf. L
+        { key: "88mm kwk",          name: "Tiger I"       },
+        { key: "75mm kwk 42",       name: "Panther"       },
+        { key: "75mm kwk 40",       name: "Panzer IV"     },
+        { key: "75mm kwk37",        name: "Panzer IV"     },
+        { key: "50mm kwk 39",       name: "Puma"          },
+        { key: "20mm kwk",          name: "Luchs"         },
+        { key: "75mm pak",          name: "Marder"        },
+        { key: "pak 40",            name: "Marder"        },
+        // ── US ──
+        { key: "m4a3e2(76)",        name: "Jumbo 76"      },  // Heavy
+        { key: "m4a3e2",            name: "Jumbo 75"      },  // Heavy
+        { key: "m4a3",              name: "Sherman"       },  // Medium
+        { key: "m5a1",              name: "Stuart"        },  // Light
+        { key: "m8 greyhound",      name: "Greyhound"     },  // Recon
+        { key: "76mm m1",           name: "Jumbo 76"      },
+        { key: "75mm m3",           name: "Sherman"       },
+        { key: "75mm cannon",       name: "Sherman"       },
+        { key: "37mm",              name: "Stuart"        },
+        // ── SOVIET ──
+        { key: "is-1",              name: "IS-1"          },  // Heavy
+        { key: "t-34",              name: "T-34/76"       },  // Medium
+        { key: "t34",               name: "T-34/76"       },
+        { key: "t-70",              name: "T-70"          },  // Light
+        { key: "ba-10",             name: "BA-10"         },  // Recon
+        { key: "122mm",             name: "IS-1"          },
+        { key: "76mm zis",          name: "T-34/76"       },
+        { key: "76mm f-34",         name: "T-34/76"       },
+        { key: "45mm",              name: "T-70"          },
+        // ── BRITISH ──
+        { key: "churchill mk vii",  name: "Churchill VII" },  // Heavy
+        { key: "churchill mk iii",  name: "Churchill III" },  // Heavy
+        { key: "firefly",           name: "Firefly"       },  // Heavy
+        { key: "cromwell",          name: "Cromwell"      },  // Medium
+        { key: "crusader",          name: "Crusader"      },  // Medium
+        { key: "m3 stuart",         name: "Honey"         },  // Light
+        { key: "tetrarch",          name: "Tetrarch"      },  // Light
+        { key: "daimler",           name: "Daimler"       },  // Recon
+        { key: "17 pounder",        name: "Firefly"       },
+        { key: "17pdr",             name: "Firefly"       },
+        { key: "qf 75mm",           name: "Cromwell"      },
+        { key: "qf 6 pounder",      name: "Crusader"      },
+        { key: "qf 2 pounder",      name: "Tetrarch"      },
+    ];;
 
     const AXIS_SIGS = [
         "kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
@@ -290,34 +316,83 @@
     const ARMOR_KEYWORDS = [
         "panzer", "tiger", "panther", "sherman", "stuart",
         "firefly", "puma", "lux", "marder", "halftrack", "greyhound",
-        "is-2", "is2", "t-34", "t34", "coaxial", "kwk",
+        "is-2", "is2", "t-34", "t34", "sd.kfz", "coaxial", "co-axial", "co axial", "coax", "kwk",
+        "75mm cannon", "75mm m3", "76mm m1", "88mm kwk",
+        "qf 75mm", "qf 6 pounder", "qf 2 pounder",
         "17pdr", "17 pounder", "hull mg", "besa",
         "m4a3", "m4a1", "m5a1", "m8a1"
     ];
+    const AT_INFANTRY_KEYWORDS = [
+        "bazooka", "panzerschreck", "piat", "panzerfaust", "anti_tank", "m5 at"
+    ];
+    const INFANTRY_WEAPON_KEYWORDS = [
+        "kar98", "karabiner", "gewehr", "mp40", "stg44", "fg42",
+        "garand", "thompson", "carbine", "springfield", "m1911",
+        "grease", "sten", "enfield", "mosin", "ppsh", "svt40",
+        "tokarev", "nagant", "luger", "walther", "p38"
+    ];
+    const TANK_ROLE_KEYWORDS = ["tank", "armor", "armour", "crewman", "gunner", "driver"];
+    const toNum = (v) => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : 0;
+    };
+    const weaponKillValue = (raw) => {
+        if (typeof raw === "number" || typeof raw === "string") return toNum(raw);
+        if (raw && typeof raw === "object") {
+            return toNum(raw.kills ?? raw.kill ?? raw.count ?? raw.value ?? raw.total ?? 0);
+        }
+        return 0;
+    };
+    const isATWeaponName = (nameLower) => AT_INFANTRY_KEYWORDS.some(k => nameLower.includes(k));
+    const isInfantryWeaponName = (nameLower) => INFANTRY_WEAPON_KEYWORDS.some(k => nameLower.includes(k));
+    const isArmorWeaponName = (nameLower) => ARMOR_KEYWORDS.some(k => nameLower.includes(k));
+    function getArmorWeaponKills(p) {
+        let total = 0;
+        Object.entries((p && p.weapons) || {}).forEach(([name, val]) => {
+            const nl = name.toLowerCase();
+            if (ARTILLERY_KEYWORDS.some(k => nl.includes(k))) return;
+            if (isATWeaponName(nl)) return;
+            if (isInfantryWeaponName(nl)) return;
+            if (isArmorWeaponName(nl)) total += weaponKillValue(val);
+        });
+        return total;
+    }
 
     // Words that mean it's ARTILLERY — never show these as armor
     const ARTILLERY_KEYWORDS = [
-        "howitzer", "artillery", "lefh", "155mm", "152mm", "150mm", "122mm", "105mm",
+        "howitzer", "artillery", "lefh", "155mm", "152mm", "150mm", "122mm", "105mm", "sfh", "sfh",
         "m114", "m2a1", "mlrs", "katyusha", "pak 43",
         "zis-3", "zis3", "brumm", "stuh", "strumpanzer", "kv-2", "m-10t", "sherman spa"
     ];
 
     function isArmorCrew(p) {
-        if (!p.weapons) return false;
-        const weaponNames = Object.keys(p.weapons);
+        const vehicleKills = Number(p?.v_kills ?? p?.vehicle_kills ?? p?.vehicles_destroyed ?? 0);
+        const weaponNames = Object.keys((p && p.weapons) || {});
+        if (!weaponNames.length) {
+            const roleText = `${p?.role || ""} ${p?.class || ""} ${p?.loadout || ""} ${p?.unit || ""} ${p?.squad || ""}`.toLowerCase();
+            const hasTankRole = TANK_ROLE_KEYWORDS.some(k => roleText.includes(k));
+            return Number.isFinite(vehicleKills) && vehicleKills > 0 && hasTankRole;
+        }
         const wAll = weaponNames.join(" ").toLowerCase();
 
         // Hard exclude if any weapon is artillery
         if (ARTILLERY_KEYWORDS.some(k => wAll.includes(k))) return false;
 
-        // Anyone with vehicle kills qualifies
-        if ((p.v_kills || 0) > 0) return true;
-
-        // Check each weapon for armor keywords
-        return weaponNames.some(w => {
+        const hasArmorWeapon = weaponNames.some(w => {
             const wl = w.toLowerCase();
-            return ARMOR_KEYWORDS.some(k => wl.includes(k));
+            if (isATWeaponName(wl)) return false;
+            if (isInfantryWeaponName(wl)) return false;
+            return isArmorWeaponName(wl);
         });
+        const hasATWeapon = weaponNames.some(w => {
+            const wl = w.toLowerCase();
+            return isATWeaponName(wl);
+        });
+
+        // Pure AT infantry should not appear in armor panels.
+        if (hasATWeapon && !hasArmorWeapon) return false;
+        if (hasArmorWeapon) return true;
+        return Number.isFinite(vehicleKills) && vehicleKills > 0 && !hasATWeapon;
     }
 
     function renderPanel(contentId, titleId, footerId, crews, color, factionName) {
@@ -343,7 +418,7 @@
             </div>`;
 
         const rows = crews.map((p, i) => {
-            const kills  = Number(p.kills  || 0);
+            const kills  = getArmorWeaponKills(p);
             const deaths = Number(p.deaths || 0);
             const kd     = deaths > 0 ? (kills / deaths).toFixed(1) : kills;
             const tank   = detectTankType(p);
@@ -394,7 +469,7 @@
 
         try {
             const sep = api.includes("?") ? "&" : "?";
-            const res = await fetch(api + sep + "t=" + Date.now(), { cache: "no-store", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" } });
+            const res = await fetch(api + sep + "t=" + Date.now(), { cache: "no-store" });
             if (!res.ok) throw new Error(res.status);
             const data    = await res.json();
             const players = data?.result?.stats || [];
@@ -415,12 +490,12 @@
             const allCrew = players.filter(p => isArmorCrew(p));
             const leftCrew  = allCrew
                 .filter(p => identifyTeam(p) === leftFaction)
-                .sort((a, b) => Number(b.kills || 0) - Number(a.kills || 0))
-                .slice(0, 8);
+                .sort((a, b) => getArmorWeaponKills(b) - getArmorWeaponKills(a))
+                .slice(0, 9);
             const rightCrew = allCrew
                 .filter(p => identifyTeam(p) === rightFaction)
-                .sort((a, b) => Number(b.kills || 0) - Number(a.kills || 0))
-                .slice(0, 8);
+                .sort((a, b) => getArmorWeaponKills(b) - getArmorWeaponKills(a))
+                .slice(0, 9);
 
             renderPanel("left-content",  "left-title",  "left-footer",  leftCrew,  leftColor,  leftName);
             renderPanel("right-content", "right-title", "right-footer", rightCrew, rightColor, rightName);

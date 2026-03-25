@@ -1,52 +1,32 @@
-# HLL Command Hub — Changelog
+## v2.0.1
+- Fixed critical bug where changing Team Side or Faction from the phone view would clear the API URL for all overlays
+- Hub no longer shows NO SIGNAL on a single failed config fetch — requires 3 consecutive failures before flagging offline
+- Server config read/write is now atomic — prevents partial file reads during simultaneous saves causing temporary signal loss
 
-## v1.1.2
-- Fixed infantry kill counting in Team Comparison and Map Overlay — previously only kills from explicitly listed weapon keywords were counted, missing grenades, shovels, pistols and any unlisted weapon
-- Infantry now counted as total kills minus vehicle kills minus other tracked categories (MG, sniper, AT, satchel, artillery) — matches the same logic used by the Top 5 and Top 10 scroll banners
-- This means infantry totals in team comparison will now be consistent with the ticker leaderboards
+## v2.0
+- Complete hub overhaul — new layout, new numbering system, cleaner design
+- OBS Browser Sources now shows dimensions per overlay (e.g. 1920 × 1080)
+- Phone view updated to match desktop numbering and section order
+- Player spotlight dropdown on both desktop and phone — type part of a name to search live players
+- Smart word-boundary matching — searching "bert" finds "PF | Bert" before "timbert"
+- Spotlight player list fetched through local server to avoid CORS issues
+- Stat Display selector in Spotlight Player — choose Combat, Defense, Support, or Offense
+- Scroll Banner Stat selector — choose which stat shows next to kills in Top 5 & Top 10 banners
+- Top 5 and Top 10 scroll banner frequency control — set to Always On or every 5/10/15/20/25 minutes
+- Custom ticker messages are now always shown in the scroll banners — no frequency selection needed
+- Message banner timing options retained — Every 10/15/30 Min and Test mode
+- All artillery correctly excluded across all overlays
+- Brummbar correctly identified as SPA artillery in all overlays and killfeed
+- All 22 tanks correctly detected and named for all 4 factions
+- Bracket-priority weapon lookup prevents false tank type detection
+- Infantry kills use residual method — knife, grenade, melee all correctly counted
+- Armor column counts only tank crew vehicle kills, not AT infantry
+- New GUI installer with automatic Python detection, guided PATH setup, and desktop shortcut
+- Desktop shortcut opens browser automatically when server starts
+- Auto-updater checks for updates on every launch
+- Server now suppresses Windows connection noise in terminal
+- Hide/Show toggle added to OBS Browser Sources and Ticker Messages sections to reduce hub clutter
 
-## v1.1.1
-- All 6 artillery and SPA weapons now correctly identified and excluded across every overlay
-  - Allied fixed: 155mm Howitzer (M114), 122mm Howitzer (M-30)
-  - Axis fixed: 150mm Howitzer (sFH 18)
-  - Allied SPA: Sherman SPA 105mm, KV-2 152mm
-  - Axis SPA: Brummbar (Strumpanzer IV) — shows as "Brummbar SPA" in kill feed
-- Fixed German artillery players (sFH 18, Brummbar) being misassigned to Allied team when CRCON team field is absent — kills now count toward correct Axis artillery total in team comparison and map overlay
-- Added 122mm and 152mm to exclusion lists across all overlays so Soviet artillery is never counted as infantry
-- KV-2 and Sherman SPA now show correct names in kill feed
-- Tank scoreboard now correctly excludes KV-2, Sherman SPA and all SPA variants from armor panels
-
-## v1.1.0
-- Top 5 and Top 10 scroll banners now use JS-driven scrolling (requestAnimationFrame) instead of CSS animation — completely seamless, never resets or jumps when stats or messages update
-- All overlays now send a proper browser User-Agent header with API requests — fixes OPNsense WAP firewall blocks that some server admins may have
-- Brummbar (Strumpanzer IV) now correctly identified as artillery and excluded from infantry lists across all overlays
-- Brummbar shows as "Brummbar SPA" in kill feed
-- Panzer IV and Panther no longer falsely detected as Sherman — bracket-priority weapon lookup added
-- Tiger correctly matched via sd.kfz.181 bracket name
-- Sherman Jumbo (M4A3E2) now shows as "Green Bean" in tank scoreboard and kill feed
-
-## v1.0.9
-- Added Message Banner overlay — transparent 1920x1080 overlay that bounces in (Pixar lamp style) and slowly fades out
-- Message Banner shows custom messages from hub Box 5 — completely separate from the scroll banners
-- Added "Show In" selector in Box 5 — choose between Scroll Banners or Message Banner per message
-- Scroll Banners get loop-based and short time frequencies (every loop, 3/5/10 loops, 2/5 min)
-- Message Banner gets longer time frequencies (2/5/10/15/30 min) and a ⚡ Test mode (every 5 sec) for positioning in OBS
-- Preview strip in hub updates to match the selected destination — shows scrolling ticker for banners, card-style preview for message banner
-- Ticker scroll animation no longer resets when stats update — seamless continuous scroll
-- Fixed ticker messages not appearing for users with messages saved on PC but viewing from phone
-- Messages synced from server every 2 seconds to all devices
-
-## v1.0.8
-- Added Ticker Messages system to hub (Box 5)
-- Add custom messages to Top 5 and Top 10 scroll banners between player entries
-- Choose platform icon per message: General, Twitch, YouTube, TikTok, X, Discord, Instagram (proper SVG brand icons)
-- Set show frequency per message: every loop, every 3/5/10 loops, every 2/5 minutes
-- Toggle individual messages on/off without deleting them
-- Live preview strip shows exactly how messages look in the ticker before going live
-- Phone view (Box 4) shows all saved messages — toggle on/off and change frequency from your phone
-- Messages saved on PC automatically sync to phone view within 2 seconds
-- Messages must be created on PC first, phone controls existing messages only
-- Fixed ticker scroll banners using stale endpoint — now uses cached config for reliability
 
 ## v1.0.8
 - Replaced emoji platform icons with proper SVG brand icons (Twitch, YouTube, TikTok, X, Discord, Instagram)
