@@ -1,3 +1,12 @@
+## v2.0.2
+- Fixed British sniper not being detected — added Rifle No.4 Mk I Sniper and Lee-Enfield variants
+- Fixed German Karabiner 98K sniper scope notation (x8 not 8x)
+- Added FG 42 X4 scoped variant to German sniper detection
+- Added Mosin-Nagant and SVT-40 hyphenated name variants for Soviet snipers
+- Added M1903 Springfield short-form key for US snipers
+- Removed incorrect Gewehr 43 ZF4 from sniper list (marksman rifle, not sniper)
+- Removed broad "scoped" catch-all from sniper detection to prevent false matches
+
 ## v2.0.1
 - Fixed critical bug where changing Team Side or Faction from the phone view would clear the API URL for all overlays
 - Hub no longer shows NO SIGNAL on a single failed config fetch — requires 3 consecutive failures before flagging offline
