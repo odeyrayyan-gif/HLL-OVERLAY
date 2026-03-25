@@ -115,7 +115,7 @@
         rocket: ["bazooka", "panzerschreck", "piat", "panzerfaust"],
         artillery: ["artillery", "155mm", "150mm", "105mm", "lefh", "howitzer", "spa 105", "sfh"],
         satchel: ["satchel", "explosive charge"],
-        sniper:  ["kar98k 8x", "karabiner 98 k 8x", "springfield m1903a3", "mosin nagant m91/30 pu", "gewehr 43 zf4", "svt 40 pu", "enfield l42", "zf41", "zf 41", "scoped"]
+        sniper:  ["kar98k x8", "kar98k 8x", "karabiner 98k x8", "karabiner 98k 8x", "karabiner 98 k x8", "fg 42 x4", "fg42 x4", "springfield m1903", "m1903", "mosin nagant m91/30 pu", "mosin-nagant m91/30 pu", "svt 40 pu", "svt-40 pu", "lee-enfield l42", "enfield l42", "enfield no.4", "no.4 mk", "rifle no.4", "no.4 mk i sniper", "zf41", "zf 41"]
     };
 
     async function fetchNoCache(url) {
@@ -311,7 +311,7 @@
     async function update() {
         try {
             const settings = cachedConfig;
-            if (!settings.api_endpoint) { document.getElementById("status-text").innerText = "AWAITING API — CHECK HUB"; setTimeout(update, 1000); return; }
+            if (!settings.api_endpoint) { document.getElementById("status-text").innerText = "AWAITING API — CHECK HUB"; return; }
             const data = await fetchNoCache(settings.api_endpoint);
             const players = data?.result?.stats || [];
             const swapped = settings.swap_sides;
