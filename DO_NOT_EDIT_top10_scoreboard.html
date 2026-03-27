@@ -167,6 +167,8 @@
 </div>
 
 <script>
+const AXIS_SIGS = ["kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41","p38","luger","walther","stielhandgranate","tiger","panzer","puma","lux","marder","lefh","pak40","panzerfaust"];
+
 const MODE_META = {
   combat:  { label: 'Combat Score',   short: 'CMB', field: 'combat'  },
   offense: { label: 'Offensive Score', short: 'OFF', field: 'offense' },
@@ -195,10 +197,17 @@ async function fetchStats() {
 }
 
 function sideClass(p, swap) {
-  const name = (p.player || p.name || '').toLowerCase();
   const team = (p.team || '').toLowerCase();
-  const isAxis = team.includes('axis') || team.includes('ger') ||
-    (!team.includes('allie') && !team.includes('us') && !team.includes('uk') && !team.includes('soviet'));
+  const wKeys = Object.keys(p.weapons || {}).join(' ').toLowerCase();
+  let isAxis = false;
+  if (team.includes('axis') || team.includes('ger')) {
+    isAxis = true;
+  } else if (team.includes('allie') || team.includes('us') || team.includes('uk') || team.includes('soviet')) {
+    isAxis = false;
+  } else {
+    // Fallback: detect by weapon signatures
+    isAxis = AXIS_SIGS.some(s => wKeys.includes(s));
+  }
   return swap ? (isAxis ? 'allies' : 'axis') : (isAxis ? 'axis' : 'allies');
 }
 
