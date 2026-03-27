@@ -224,7 +224,9 @@ class HLLHandler(SimpleHTTPRequestHandler):
             return
         # ── /config — return current settings as JSON ──
         if path == "/config":
-            self.send_json(self.read_config())
+            cfg = self.read_config()
+            cfg["player"] = self.read_player()
+            self.send_json(cfg)
             return
         # ── /player — return current spotlight player name ──
         if path == "/player":
