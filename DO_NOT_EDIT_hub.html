@@ -87,6 +87,9 @@
         .card-url { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--blue); margin-bottom: 12px; opacity: 0.7; }
         .copy-btn { width: 100%; background: transparent; color: var(--text-mid); border: 1px solid var(--border); padding: 8px; border-radius: 5px; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .copy-btn:hover { background: var(--red); border-color: var(--red); color: white; }
+        .score-btn { padding: 10px 24px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-dim); font-family: 'Share Tech Mono', monospace; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+        .score-btn:hover { border-color: var(--border-bright); color: #fff; }
+        .score-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
         .copy-btn.copied { background: rgba(0,255,136,0.1); border-color: var(--green); color: var(--green); }
 
         .footer { margin-top: 36px; text-align: center; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 3px; text-transform: uppercase; }
@@ -410,9 +413,23 @@
 
     <!-- OBS LINKS -->
     <!-- 5: TICKER MESSAGES -->
-    <div class="section">
+        <div class="section">
         <div class="section-header">
             <div class="section-num">5</div>
+            <div class="section-title">Top 10 Score Mode</div>
+            <div class="section-hint" id="scoreModeHint">Controls Top 10 Scoreboard overlay</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="score-btn active" data-mode="combat"  onclick="setScoreMode('combat')">Combat</button>
+            <button class="score-btn"        data-mode="offense" onclick="setScoreMode('offense')">Offensive</button>
+            <button class="score-btn"        data-mode="defense" onclick="setScoreMode('defense')">Defensive</button>
+            <button class="score-btn"        data-mode="support" onclick="setScoreMode('support')">Support</button>
+        </div>
+    </div>
+
+<div class="section">
+        <div class="section-header">
+            <div class="section-num">6</div>
             <div class="section-title">Ticker Messages</div>
             <div class="section-hint" id="msgHint">Injected into Top 5 &amp; Top 10 scroll banners</div>
         </div>
@@ -537,7 +554,7 @@
 
     <div class="section">
         <div class="overlays-header">
-            <div class="section-num">6</div>
+            <div class="section-num">7</div>
             <div class="overlays-title">OBS Browser Sources</div>
             <div class="overlays-line"></div>
             <div class="overlays-count">11 OVERLAYS</div>
@@ -646,6 +663,7 @@
         { n: "Player Spotlight",     f: "DO_NOT_EDIT_player_spotlight.html",    icon: "🎯",  w: 1920, h: 1080 },
         { n: "Top 5 Scroll Banner",  f: "DO_NOT_EDIT_top5_scroll_banner.html",  icon: "📊",  w: 1920, h: 60   },
         { n: "Top 10 Scroll Banner", f: "DO_NOT_EDIT_top10_scroll_banner.html", icon: "📋",  w: 1920, h: 60   },
+        { n: "Top 10 Scoreboard",   f: "DO_NOT_EDIT_top10_scoreboard.html",   icon: "🏆",  w: 1920, h: 1080 },
         { n: "Live Map",             f: "DO_NOT_EDIT_map_overlay.html",         icon: "🗺️",  w: 1920, h: 1080 },
         { n: "Kill Streaks",         f: "DO_NOT_EDIT_killstreaks.html",         icon: "💀",  w: 1920, h: 1080 },
         { n: "Kill Feed",            f: "DO_NOT_EDIT_killfeed.html",            icon: "🎯",  w: 1920, h: 1080 },
@@ -954,8 +972,22 @@
     }
 
     // ── Load saved config from server on startup ──
-    async function loadConfig() {
+    async function setScoreMode(mode) {
+            try {
+                const cfg = await fetch('http://localhost:3000/config',{cache:'no-store'}).then(r=>r.json());
+                cfg.score_mode = mode;
+                await fetch('http://localhost:3000/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg)});
+                document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+                const hint = document.getElementById('scoreModeHint');
+                if (hint) { hint.textContent = 'Saved — ' + mode.charAt(0).toUpperCase() + mode.slice(1) + ' Score'; setTimeout(() => hint.textContent = 'Controls Top 10 Scoreboard overlay', 2000); }
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadConfig() {
         try {
+            const cfg2 = await fetch('http://localhost:3000/config',{cache:'no-store'}).then(r=>r.json()).catch(()=>({}));
+            const savedMode = cfg2.score_mode || 'combat';
+            document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === savedMode));
             const res  = await fetch(`${SERVER}/config`);
             const data = await res.json();
             document.getElementById('api').value    = data.api_endpoint || '';
