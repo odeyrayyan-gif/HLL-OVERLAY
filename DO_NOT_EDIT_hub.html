@@ -298,7 +298,7 @@
     <!-- 1: API URL -->
     <div class="section">
         <div class="section-header">
-            <div class="section-num">1</div>
+            <div class="section-num">2</div>
             <div class="section-title">Match API URL</div>
             <div class="section-hint" id="apiHint">Saved instantly to all overlays</div>
         </div>
@@ -330,7 +330,7 @@
     <!-- 2: TEAM SWAP -->
     <div class="section">
         <div class="section-header">
-            <div class="section-num">2</div>
+            <div class="section-num">3</div>
             <div class="section-title">Team Side Alignment</div>
             <div class="section-hint" id="swapHint">Blue = left · Red = right · always</div>
         </div>
@@ -357,7 +357,7 @@
     <!-- 3: FACTION SELECTOR -->
     <div class="section">
         <div class="section-header">
-            <div class="section-num">3</div>
+            <div class="section-num">4</div>
             <div class="section-title">Faction Selection</div>
             <div class="section-hint" id="factionHint">Replaces labels in all overlays</div>
         </div>
@@ -392,7 +392,7 @@
     <!-- 4: SPOTLIGHT -->
     <div class="section">
         <div class="section-header">
-            <div class="section-num">4</div>
+            <div class="section-num">5</div>
             <div class="section-title">Spotlight Player</div>
             <div class="section-hint" id="spotlightHint">Updates overlay within 3 seconds</div>
         </div>
@@ -622,9 +622,23 @@
         </div>
     </div>
 
-    <div class="phone-card">
+        <div class="phone-card">
         <div class="phone-label">
             <div class="phone-label-num">4</div>
+            Top 10 Score Mode
+            <span class="phone-hint" id="phoneScoreModeHint">tap to switch</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;" id="phoneScoreModeGroup">
+            <div class="stat-mode-btn" data-mode="combat"  onclick="setPhoneScoreMode(this)">COMBAT</div>
+            <div class="stat-mode-btn" data-mode="offense" onclick="setPhoneScoreMode(this)">OFFENSIVE</div>
+            <div class="stat-mode-btn" data-mode="defense" onclick="setPhoneScoreMode(this)">DEFENSIVE</div>
+            <div class="stat-mode-btn" data-mode="support" onclick="setPhoneScoreMode(this)">SUPPORT</div>
+        </div>
+    </div>
+
+    <div class="phone-card">
+        <div class="phone-label">
+            <div class="phone-label-num">5</div>
             Spotlight Player
             <span class="phone-hint" id="phoneSpotlightHint">type to search</span>
         </div>
@@ -645,7 +659,7 @@
     <!-- Phone: Ticker Messages -->
     <div class="phone-card" id="phone-msg-card">
         <div class="phone-label">
-            <div class="phone-label-num">5</div>
+            <div class="phone-label-num">6</div>
             Ticker Messages
             <span class="phone-hint">toggle &amp; frequency</span>
         </div>
@@ -972,11 +986,23 @@
     }
 
     // ── Load saved config from server on startup ──
-    async function setScoreMode(mode) {
+    async function setPhoneScoreMode(el) {
+            const mode = el.dataset.mode;
+            document.querySelectorAll('#phoneScoreModeGroup .stat-mode-btn').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+            await setScoreMode(mode);
+            // sync desktop buttons too
+            document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+            const hint = document.getElementById('phoneScoreModeHint');
+            if (hint) { hint.textContent = 'Saved!'; setTimeout(() => hint.textContent = 'tap to switch', 2000); }
+        }
+
+        async function setScoreMode(mode) {
             try {
-                const cfg = await fetch('http://localhost:3000/config',{cache:'no-store'}).then(r=>r.json());
+                const _base = `http://${window.location.hostname}:3000`;
+                const cfg = await fetch(_base+'/config',{cache:'no-store'}).then(r=>r.json());
                 cfg.score_mode = mode;
-                await fetch('http://localhost:3000/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg)});
+                await fetch(_base+'/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg)});
                 document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
                 const hint = document.getElementById('scoreModeHint');
                 if (hint) { hint.textContent = 'Saved — ' + mode.charAt(0).toUpperCase() + mode.slice(1) + ' Score'; setTimeout(() => hint.textContent = 'Controls Top 10 Scoreboard overlay', 2000); }
@@ -985,9 +1011,10 @@
 
         async function loadConfig() {
         try {
-            const cfg2 = await fetch('http://localhost:3000/config',{cache:'no-store'}).then(r=>r.json()).catch(()=>({}));
+            const cfg2 = await fetch(`http://${window.location.hostname}:3000/config`,{cache:'no-store'}).then(r=>r.json()).catch(()=>({}));
             const savedMode = cfg2.score_mode || 'combat';
             document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === savedMode));
+            document.querySelectorAll('#phoneScoreModeGroup .stat-mode-btn').forEach(b => b.classList.toggle('selected', b.dataset.mode === savedMode));
             const res  = await fetch(`${SERVER}/config`);
             const data = await res.json();
             document.getElementById('api').value    = data.api_endpoint || '';
