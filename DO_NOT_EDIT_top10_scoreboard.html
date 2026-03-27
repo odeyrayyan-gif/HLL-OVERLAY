@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HLL Top 10 Scoreboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      rgba(7, 10, 15, 0.97);
+    --allies:  #00a2ff;
+    --axis:    #ff3c00;
+    --accent:  #ac2e2e;
+    --border:  rgba(255,255,255,0.08);
+    --dim:     rgba(255,255,255,0.35);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 3840px; height: 2160px;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Oswald', sans-serif;
+    overflow: hidden;
+  }
+
+  .card {
+    width: 1480px;
+    background: var(--bg);
+    border-radius: 36px;
+    border: 2px solid var(--border);
+    border-left: 14px solid var(--accent);
+    border-right: 14px solid var(--accent);
+    padding: 56px 64px 48px;
+    box-shadow: 0 60px 120px rgba(0,0,0,0.92);
+    backdrop-filter: blur(30px);
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 28px; margin-bottom: 32px;
+  }
+  .title-block {}
+  .title-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px; letter-spacing: 6px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .title-main {
+    font-size: 72px; font-weight: 700; letter-spacing: 8px;
+    text-transform: uppercase; color: #fff; line-height: 1;
+  }
+  .title-mode {
+    font-size: 32px; font-weight: 500; letter-spacing: 4px;
+    color: var(--accent); text-transform: uppercase; margin-top: 6px;
+  }
+
+
+
+  /* ── Column headers ── */
+  .col-headers {
+    display: grid;
+    grid-template-columns: 72px 1fr 160px 160px 160px;
+    padding: 0 20px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 17px; letter-spacing: 3px;
+    color: var(--dim); text-transform: uppercase;
+  }
+  .col-headers .ch-score { text-align: center; }
+
+  /* ── Player row ── */
+  .player-row {
+    display: grid;
+    grid-template-columns: 72px 1fr 160px 160px 160px;
+    align-items: center;
+    padding: 22px 20px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    border-left: 14px solid #222;
+    transition: border-color 0.3s;
+  }
+  .player-row.allies { border-left-color: var(--allies); }
+  .player-row.axis   { border-left-color: var(--axis); }
+  .player-row.empty  { opacity: 0.12; }
+
+  .p-rank {
+    font-size: 32px; font-weight: 700;
+    color: rgba(255,255,255,0.18);
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .p-rank.top3 { color: var(--accent); font-size: 38px; }
+
+  .p-name {
+    font-size: 38px; font-weight: 700; letter-spacing: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-transform: uppercase;
+  }
+  .allies .p-name { color: var(--allies); }
+  .axis   .p-name { color: var(--axis); }
+  .empty  .p-name { color: #fff; }
+
+  .p-side {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px; letter-spacing: 2px;
+    color: var(--dim); text-transform: uppercase; margin-top: 3px;
+  }
+
+  .stat-cell {
+    text-align: center;
+    border-left: 1px solid var(--border);
+  }
+  .stat-primary {
+    font-size: 52px; font-weight: 700; line-height: 1;
+    display: block;
+  }
+  .stat-secondary {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--dim); letter-spacing: 1px;
+    display: block; margin-top: 4px;
+  }
+  .stat-cell.active-col .stat-primary { color: var(--accent); }
+
+  /* ── Status ── */
+  .status-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 28px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px; color: var(--dim); letter-spacing: 3px;
+  }
+  .dot {
+    display: inline-block; width: 11px; height: 11px;
+    border-radius: 50%; margin-right: 10px;
+    background: #444; transition: background 0.3s;
+  }
+  .dot.live { background: #00ff80; box-shadow: 0 0 8px #00ff80; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="title-block">
+      <div class="title-sub">Hell Let Loose</div>
+      <div class="title-main">Top 10</div>
+      <div class="title-mode" id="modeLabel">Combat Score</div>
+    </div>
+
+  </div>
+
+  <div class="col-headers">
+    <div>#</div>
+    <div>Player</div>
+    <div class="ch-score" id="hdr-primary">CMB</div>
+    <div class="ch-score">K / D</div>
+    <div class="ch-score">SIDE</div>
+  </div>
+
+  <div id="rows"></div>
+
+  <div class="status-bar">
+    <div><span class="dot" id="dot"></span><span id="status-text">CONNECTING...</span></div>
+    <div id="updated"></div>
+  </div>
+</div>
+
+<script>
+const MODE_META = {
+  combat:  { label: 'Combat Score',   short: 'CMB', field: 'combat'  },
+  offense: { label: 'Offensive Score', short: 'OFF', field: 'offense' },
+  defense: { label: 'Defensive Score', short: 'DEF', field: 'defense' },
+  support: { label: 'Support Score',   short: 'SUP', field: 'support' },
+};
+
+let currentMode = 'combat';
+let allPlayers  = [];
+let teamSwap    = false;
+
+async function fetchConfig() {
+  try {
+    const r = await fetch('http://localhost:3000/config', { cache: 'no-store' });
+    return r.ok ? r.json() : {};
+  } catch { return {}; }
+}
+
+async function fetchStats() {
+  try {
+    const r = await fetch('http://localhost:3000/stats?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j?.result?.stats || j?.players || null;
+  } catch { return null; }
+}
+
+function sideClass(p, swap) {
+  const name = (p.player || p.name || '').toLowerCase();
+  const team = (p.team || '').toLowerCase();
+  const isAxis = team.includes('axis') || team.includes('ger') ||
+    (!team.includes('allie') && !team.includes('us') && !team.includes('uk') && !team.includes('soviet'));
+  return swap ? (isAxis ? 'allies' : 'axis') : (isAxis ? 'axis' : 'allies');
+}
+
+function sideLabel(p, swap, cfg) {
+  const sc = sideClass(p, swap);
+  if (sc === 'allies') return cfg?.allies_faction || 'ALLIES';
+  return cfg?.axis_faction || 'AXIS';
+}
+
+function render(cfg) {
+  const meta = MODE_META[currentMode];
+  document.getElementById('modeLabel').textContent = meta.label;
+  document.getElementById('hdr-primary').textContent = meta.label.replace(' Score','').toUpperCase();
+
+  const sorted = [...allPlayers]
+    .filter(p => (p[meta.field] ?? 0) > 0 || p.kills > 0)
+    .sort((a, b) => (b[meta.field] ?? 0) - (a[meta.field] ?? 0))
+    .slice(0, 10);
+
+  let html = '';
+  for (let i = 0; i < 10; i++) {
+    const p = sorted[i];
+    if (!p) {
+      html += `<div class="player-row empty">
+        <div class="p-rank">${String(i+1).padStart(2,'0')}</div>
+        <div><div class="p-name">—</div></div>
+        <div class="stat-cell"><span class="stat-primary">—</span></div>
+        <div class="stat-cell"><span class="stat-primary">—</span></div>
+        <div class="stat-cell"><span class="stat-primary">—</span></div>
+      </div>`;
+      continue;
+    }
+    const sc   = sideClass(p, teamSwap);
+    const side = sideLabel(p, teamSwap, cfg);
+    const rankClass = i < 3 ? 'top3' : '';
+    const pScore = p[meta.field] ?? 0;
+    const kills  = p.kills  ?? 0;
+    const deaths = p.deaths ?? 0;
+    html += `<div class="player-row ${sc}">
+      <div class="p-rank ${rankClass}">${String(i+1).padStart(2,'0')}</div>
+      <div>
+        <div class="p-name">${(p.player || p.name || 'Unknown').toUpperCase()}</div>
+        <div class="p-side">${side} · ${(p.role || '—').toUpperCase()}</div>
+      </div>
+      <div class="stat-cell active-col">
+        <span class="stat-primary">${pScore.toLocaleString()}</span>
+        <span class="stat-secondary">${meta.label.replace(' Score','').toUpperCase()}</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-primary">${kills}/${deaths}</span>
+        <span class="stat-secondary">K/D</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-primary" style="font-size:28px;color:var(--dim)">${side}</span>
+      </div>
+    </div>`;
+  }
+  document.getElementById('rows').innerHTML = html;
+}
+
+async function poll() {
+  const [cfg, stats] = await Promise.all([fetchConfig(), fetchStats()]);
+  teamSwap = cfg?.swap_sides === true || cfg?.swap_sides === 'true';
+
+  const dot  = document.getElementById('dot');
+  const stxt = document.getElementById('status-text');
+  const upd  = document.getElementById('updated');
+
+  if (stats && stats.length) {
+    dot.className = 'dot live';
+    stxt.textContent = 'LIVE';
+    upd.textContent  = new Date().toLocaleTimeString();
+    allPlayers = stats;
+    // Read score mode from hub config
+    currentMode = cfg?.score_mode || 'combat';
+    render(cfg);
+  } else {
+    dot.className = 'dot';
+    stxt.textContent = 'NO SIGNAL';
+    upd.textContent  = '';
+    render(cfg);
+  }
+}
+
+poll();
+setInterval(poll, 8000);
+</script>
+</body>
+</html>
