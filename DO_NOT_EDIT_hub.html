@@ -298,7 +298,7 @@
     <!-- 1: API URL -->
     <div class="section">
         <div class="section-header">
-            <div class="section-num">2</div>
+            <div class="section-num">1</div>
             <div class="section-title">Match API URL</div>
             <div class="section-hint" id="apiHint">Saved instantly to all overlays</div>
         </div>
@@ -330,7 +330,7 @@
     <!-- 2: TEAM SWAP -->
     <div class="section">
         <div class="section-header">
-            <div class="section-num">3</div>
+            <div class="section-num">2</div>
             <div class="section-title">Team Side Alignment</div>
             <div class="section-hint" id="swapHint">Blue = left · Red = right · always</div>
         </div>
@@ -357,7 +357,7 @@
     <!-- 3: FACTION SELECTOR -->
     <div class="section">
         <div class="section-header">
-            <div class="section-num">4</div>
+            <div class="section-num">3</div>
             <div class="section-title">Faction Selection</div>
             <div class="section-hint" id="factionHint">Replaces labels in all overlays</div>
         </div>
@@ -392,7 +392,7 @@
     <!-- 4: SPOTLIGHT -->
     <div class="section">
         <div class="section-header">
-            <div class="section-num">5</div>
+            <div class="section-num">4</div>
             <div class="section-title">Spotlight Player</div>
             <div class="section-hint" id="spotlightHint">Updates overlay within 3 seconds</div>
         </div>
@@ -577,9 +577,9 @@
         <div class="phone-status-text" id="phoneStatus">Loading...</div>
     </div>
 
-    <div class="phone-card">
+<div class="phone-card">
         <div class="phone-label">
-            <div class="phone-label-num">2</div>
+            <div class="phone-label-num">1</div>
             Team Side Alignment
             <span class="phone-hint" id="phoneSwapHint">tap to change</span>
         </div>
@@ -605,7 +605,7 @@
 
     <div class="phone-card">
         <div class="phone-label">
-            <div class="phone-label-num">3</div>
+            <div class="phone-label-num">2</div>
             Allied Faction
             <span class="phone-hint" id="phoneFactionHint">tap to select</span>
         </div>
@@ -624,21 +624,7 @@
 
         <div class="phone-card">
         <div class="phone-label">
-            <div class="phone-label-num">4</div>
-            Top 10 Score Mode
-            <span class="phone-hint" id="phoneScoreModeHint">tap to switch</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;" id="phoneScoreModeGroup">
-            <div class="stat-mode-btn" data-mode="combat"  onclick="setPhoneScoreMode(this)">COMBAT</div>
-            <div class="stat-mode-btn" data-mode="offense" onclick="setPhoneScoreMode(this)">OFFENSIVE</div>
-            <div class="stat-mode-btn" data-mode="defense" onclick="setPhoneScoreMode(this)">DEFENSIVE</div>
-            <div class="stat-mode-btn" data-mode="support" onclick="setPhoneScoreMode(this)">SUPPORT</div>
-        </div>
-    </div>
-
-    <div class="phone-card">
-        <div class="phone-label">
-            <div class="phone-label-num">5</div>
+            <div class="phone-label-num">3</div>
             Spotlight Player
             <span class="phone-hint" id="phoneSpotlightHint">type to search</span>
         </div>
@@ -656,10 +642,26 @@
         <button class="phone-clear" onclick="clearPhonePlayer()">✕ Clear — Show Top Killer</button>
     </div>
 
+    <div class="phone-card">
+        <div class="phone-label">
+            <div class="phone-label-num">4</div>
+            Top 10 Score Mode
+            <span class="phone-hint" id="phoneScoreModeHint">tap to switch</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;" id="phoneScoreModeGroup">
+            <div class="stat-mode-btn" data-mode="combat"  onclick="setPhoneScoreMode(this)">COMBAT</div>
+            <div class="stat-mode-btn" data-mode="offense" onclick="setPhoneScoreMode(this)">OFFENSIVE</div>
+            <div class="stat-mode-btn" data-mode="defense" onclick="setPhoneScoreMode(this)">DEFENSIVE</div>
+            <div class="stat-mode-btn" data-mode="support" onclick="setPhoneScoreMode(this)">SUPPORT</div>
+        </div>
+    </div>
+
+    
+
     <!-- Phone: Ticker Messages -->
     <div class="phone-card" id="phone-msg-card">
         <div class="phone-label">
-            <div class="phone-label-num">6</div>
+            <div class="phone-label-num">5</div>
             Ticker Messages
             <span class="phone-hint">toggle &amp; frequency</span>
         </div>
@@ -717,6 +719,17 @@
 
     // ── Write player name to server ──
     async function savePlayer(hintId) {
+        // Sync desktop <-> phone player field
+        const desktopVal = document.getElementById('player')?.value || '';
+        const phoneVal   = document.getElementById('phone-player')?.value || '';
+        if (hintId === 'spotlightHint' && phoneVal !== desktopVal) {
+            const ph = document.getElementById('phone-player');
+            if (ph) ph.value = desktopVal;
+        }
+        if (hintId === 'phoneSpotlightHint') {
+            const dp = document.getElementById('player');
+            if (dp) dp.value = phoneVal;
+        }
         const hint = document.getElementById(hintId);
         hint.textContent = 'SAVING...';
         hint.style.color = '#718096';
@@ -988,25 +1001,38 @@
     // ── Load saved config from server on startup ──
     async function setPhoneScoreMode(el) {
             const mode = el.dataset.mode;
+            // Optimistically update UI
             document.querySelectorAll('#phoneScoreModeGroup .stat-mode-btn').forEach(b => b.classList.remove('selected'));
             el.classList.add('selected');
-            await setScoreMode(mode);
-            // sync desktop buttons too
-            document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
             const hint = document.getElementById('phoneScoreModeHint');
-            if (hint) { hint.textContent = 'Saved!'; setTimeout(() => hint.textContent = 'tap to switch', 2000); }
+            const ok = await setScoreMode(mode);
+            if (hint) {
+                if (ok) {
+                    hint.textContent = 'Saved!';
+                } else {
+                    hint.textContent = 'Save failed — check connection';
+                    el.classList.remove('selected'); // revert
+                }
+                setTimeout(() => hint.textContent = 'tap to switch', 2500);
+            }
         }
 
         async function setScoreMode(mode) {
+            const _base = `http://${window.location.hostname}:3000`;
             try {
-                const _base = `http://${window.location.hostname}:3000`;
                 const cfg = await fetch(_base+'/config',{cache:'no-store'}).then(r=>r.json());
                 cfg.score_mode = mode;
-                await fetch(_base+'/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg)});
+                const res = await fetch(_base+'/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg)});
+                if (!res.ok) throw new Error('Server returned ' + res.status);
                 document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+                document.querySelectorAll('#phoneScoreModeGroup .stat-mode-btn').forEach(b => b.classList.toggle('selected', b.dataset.mode === mode));
                 const hint = document.getElementById('scoreModeHint');
                 if (hint) { hint.textContent = 'Saved — ' + mode.charAt(0).toUpperCase() + mode.slice(1) + ' Score'; setTimeout(() => hint.textContent = 'Controls Top 10 Scoreboard overlay', 2000); }
-            } catch(e) { console.error(e); }
+                return true;
+            } catch(e) {
+                console.error('setScoreMode failed:', e);
+                return false;
+            }
         }
 
         async function loadConfig() {
@@ -1232,7 +1258,7 @@
             // ── Sync desktop player input (skip if user is actively typing) ──
             const desktopInput = document.getElementById('player');
             if (document.activeElement !== desktopInput) {
-                desktopInput.value = data.player || '';
+                desktopInput.value = data.player ?? '';
             }
             if (data.api_endpoint) {
                 try {
@@ -1257,7 +1283,13 @@
             // ── Sync phone player input (skip if user is actively typing) ──
             const phoneInput = document.getElementById('phone-player');
             if (phoneInput && document.activeElement !== phoneInput) {
-                phoneInput.value = data.player || '';
+                phoneInput.value = data.player ?? '';
+            }
+
+            // ── Sync score mode buttons (desktop + phone) ──
+            if (data.score_mode) {
+                document.querySelectorAll('.score-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === data.score_mode));
+                document.querySelectorAll('#phoneScoreModeGroup .stat-mode-btn').forEach(b => b.classList.toggle('selected', b.dataset.mode === data.score_mode));
             }
 
             // ── Phone status bar ──
