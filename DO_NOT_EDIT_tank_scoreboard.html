@@ -263,7 +263,8 @@
         "kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
         "p38","luger","walther","stielhandgranate",
         "tiger","panzer","panther","puma","lux","luchs","marder","sd.kfz",
-        "lefh","sfh","150mm","pak40","panzerfaust","brumm","stuh","strumpanzer",
+        "lefh","sfh","150mm","pak40","panzerfaust","panzerschreck","brumm","stuh","strumpanzer",
+        "s-mine","flammenwerfer",
         "88mm","75mm kwk"
     ];
 
@@ -271,9 +272,19 @@
         const t = (p.team || "").toLowerCase();
         if (t.includes("axis") || t.includes("ger")) return "Axis";
         if (t.includes("allie") || t.includes("us") || t.includes("uk") || t.includes("soviet")) return "Allies";
-        return AXIS_SIGS.some(s =>
-            Object.keys(p.weapons || {}).join(" ").toLowerCase().includes(s)
-        ) ? "Axis" : "Allies";
+        // Weighted majority: sum kills from Axis-sig weapons vs total tracked kills.
+        // CRCON records the destroyed vehicle name as the "weapon" for crew kills inside it,
+        // so a player who destroys an enemy tank gets that tank in their weapons dict.
+        // Any-match would misidentify them as Axis — majority vote by kill count prevents this.
+        let axisKills = 0, totalKills = 0;
+        Object.entries(p.weapons || {}).forEach(([name, val]) => {
+            const k = weaponKillValue(val);
+            if (k <= 0) return;
+            totalKills += k;
+            if (AXIS_SIGS.some(s => name.toLowerCase().includes(s))) axisKills += k;
+        });
+        if (totalKills === 0) return "Allies";
+        return (axisKills / totalKills) > 0.5 ? "Axis" : "Allies";
     }
 
     function detectTankType(p) {
