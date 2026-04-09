@@ -1,3 +1,9 @@
+v2.0.4
+Fixed infantry kill inflation on Team Comparison and Map Overlay — armor crew detected via vehicle kills and tank role (no weapon data) were having their total kills double-counted into both the armor and infantry categories
+Fixed incorrect players appearing in Tank Scoreboard armor panels — the armor crew fallback detection was too broad, flagging any player with a vehicle kill (satchel charges, AT mines) as tank crew even with no tank weapons
+Fixed Tank Scoreboard AXIS_SIGS diverging from Team Comparison and Map Overlay — panther, sd.kfz, luchs, sfh, 150mm, brumm, stuh, and strumpanzer were missing, causing potential team misidentification when CRCON omits the team field
+Known issue — Allied and Axis armor kills may still appear swapped on Team Comparison and Map Overlay when CRCON returns missing or incorrect team data, pushing players into weapon-based team detection fallback; under investigation
+
 v2.0.3
 Added Top 10 Scoreboard overlay — full leaderboard showing top 10 players ranked by score
 Four score modes available: Combat, Offensive, Defensive, Support
