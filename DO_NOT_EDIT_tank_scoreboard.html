@@ -262,7 +262,8 @@
     const AXIS_SIGS = [
         "kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
         "p38","luger","walther","stielhandgranate",
-        "tiger","panzer","puma","lux","marder","lefh","pak40","panzerfaust",
+        "tiger","panzer","panther","puma","lux","luchs","marder","sd.kfz",
+        "lefh","sfh","150mm","pak40","panzerfaust","brumm","stuh","strumpanzer",
         "88mm","75mm kwk"
     ];
 
@@ -390,9 +391,10 @@
         });
 
         // Pure AT infantry should not appear in armor panels.
+        // Require an actual armor weapon match — the old v_kills-only fallback
+        // was incorrectly flagging satchel/mine users as armor crew.
         if (hasATWeapon && !hasArmorWeapon) return false;
-        if (hasArmorWeapon) return true;
-        return Number.isFinite(vehicleKills) && vehicleKills > 0 && !hasATWeapon;
+        return hasArmorWeapon;
     }
 
     function renderPanel(contentId, titleId, footerId, crews, color, factionName) {
