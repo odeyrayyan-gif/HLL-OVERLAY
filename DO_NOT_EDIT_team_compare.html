@@ -56,11 +56,11 @@
 
 <script>
     const CONFIG_URL = "http://localhost:3000/config";
-    const AXIS_SIGS = ["kar98", "mp40", "mg34", "mg42", "stg44", "fg42", "gewehr", "zf41", "p38", "luger", "walther", "stielhandgranate", "tiger", "panzer", "panther", "puma", "lux", "luchs", "marder", "sd.kfz", "lefh", "sfh", "150mm", "pak40", "panzerfaust", "panzerschreck", "brumm", "stuh", "strumpanzer", "s-mine", "flammenwerfer"];
+    const AXIS_SIGS = ["kar98", "karabiner", "mp40", "mg34", "mg42", "stg44", "fg42", "gewehr", "zf41", "p38", "luger", "walther", "stielhandgranate", "tiger", "panzer", "panther", "puma", "lux", "luchs", "marder", "sd.kfz", "lefh", "sfh", "150mm", "pak40", "panzerfaust", "panzerschreck", "brumm", "stuh", "strumpanzer", "s-mine", "flammenwerfer"];
     
     const CAT_MAP = {
         infantry: ["garand", "thompson", "carbine", "springfield", "m1911", "grease", "sten", "enfield", "mosin", "ppsh", "svt40", "tokarev", "nagant", "kar98", "mp40", "stg44", "gewehr", "p38", "luger", "walther", "stielhandgranate"],
-        mg: ["mg34", "mg42", "m1919", "browning", "lewis", "dp27"],
+        mg: ["mg34", "mg42", "m1919", "browning", "lewis", "dp-27", "dp27"],
         armor: ["tiger", "panzer", "panther", "puma", "lux", "luchs", "marder", "sd.kfz", "stuart", "sherman", "is2", "t34", "75mm kwk", "75mm m3", "75mm cannon", "76mm m1", "76mm zis", "76mm f-34", "88mm kwk", "17 pounder", "qf 75mm", "qf 6 pounder"],
         rocket: ["bazooka", "panzerschreck", "piat", "panzerfaust"],
         artillery: ["artillery", "155mm", "150mm", "105mm", "lefh", "howitzer", "spa 105", "sfh"],
@@ -100,10 +100,11 @@
     const ARMOR_KEYWORDS = [
         "panzer", "tiger", "panther", "sherman", "stuart",
         "firefly", "puma", "lux", "marder", "halftrack", "greyhound",
-        "is-2", "is2", "t-34", "t34", "sd.kfz", "coaxial", "co-axial", "co axial", "coax", "kwk",
+        "is-1", "is-2", "is1", "is2", "t-34", "t34", "t-70", "t70", "kv-1", "kv1",
+        "ba-10", "ba10", "sd.kfz", "coaxial", "co-axial", "co axial", "coax", "kwk",
         "75mm cannon", "75mm m3", "76mm m1", "88mm kwk",
         "qf 75mm", "qf 6 pounder", "qf 2 pounder",
-        "17pdr", "17 pounder", "hull mg", "besa",
+        "17pdr", "17 pounder", "hull mg", "hull dt", "hull m1919", "besa",
         "m4a3", "m4a1", "m5a1", "m8a1"
     ];
     const AT_INFANTRY_KEYWORDS = [
