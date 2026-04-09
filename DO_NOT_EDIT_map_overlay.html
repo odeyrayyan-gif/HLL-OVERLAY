@@ -242,8 +242,9 @@
                 return;
             }
             if (!p.weapons) {
-                // No weapon data — if infantry, use full kills as fallback
-                if (cat === 'infantry') count += (p.kills || 0);
+                // No weapon data — if infantry, use full kills as fallback.
+                // Exclude armor crew: their kills are already captured via v_kills in the armor branch.
+                if (!armorCrew && cat === 'infantry') count += (p.kills || 0);
                 return;
             }
             // Tally kills per weapon into categories
