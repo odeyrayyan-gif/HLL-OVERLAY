@@ -1,3 +1,14 @@
+v2.0.5
+Added Map Overlay system — real-time visual layer for player spots, roles, and strategic markers designed for casting and competitive viewing
+Added Team Comparison overlay — live side-by-side breakdown of kills by category (Infantry, Sniper, Machine Gun, Armor, Anti-Tank, Artillery, Satchel) with total kill row
+Reworked kill attribution logic — removed reliance on unreliable player team field and switched to weapon-based side detection for improved accuracy across all maps and factions
+Fixed long-standing stat drift — kill totals now calculated from current live snapshot only, eliminating ghost players and cross-map stat carryover
+Improved faction detection — added full support for Soviet, British, and Canadian Allied factions along with expanded Axis identifiers
+Added dynamic faction labels — Axis team name is now configurable instead of hardcoded to “GERMANY”
+Improved sync stability — better player deduplication and faster stat convergence after match start
+Debug panel improvements — now shows true synced player count, unknown players, and snapshot totals for easier troubleshooting
+Known limitation — minor differences vs CRCON may still occur due to crew-based kill sharing (tanks/artillery) in RCON versus individual kill attribution in live game stats
+
 v2.0.4
 Fixed infantry kill inflation on Team Comparison and Map Overlay — armor crew detected via vehicle kills and tank role (no weapon data) were having their total kills double-counted into both the armor and infantry categories
 Fixed incorrect players appearing in Tank Scoreboard armor panels — the armor crew fallback detection was too broad, flagging any player with a vehicle kill (satchel charges, AT mines) as tank crew even with no tank weapons
