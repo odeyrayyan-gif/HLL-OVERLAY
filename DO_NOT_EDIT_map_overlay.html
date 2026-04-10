@@ -106,7 +106,55 @@
 
 <script>
     const CONFIG_URL = "http://localhost:3000/config";
-    const AXIS_SIGS = ["kar98", "karabiner", "mp40", "mg34", "mg42", "stg44", "fg42", "gewehr", "zf41", "p38", "luger", "walther", "stielhandgranate", "tiger", "panzer", "panther", "puma", "lux", "luchs", "marder", "sd.kfz", "lefh", "sfh", "150mm", "pak40", "panzerfaust", "panzerschreck", "brumm", "stuh", "strumpanzer", "s-mine", "flammenwerfer"];
+    const AXIS_SIGS = [
+        "mp40", "mp 40",
+        "kar98", "kar98k", "karabiner", "karabiner 98k",
+        "mg42", "mg34",
+        "stg44", "stg 44",
+        "gewehr", "fg42", "fg 42",
+        "luger", "p38", "walther",
+        "panzerfaust", "panzerschreck",
+        "stielhandgranate", "m43 stielhandgranate", "m24 stielhandgranate",
+        "s-mine", "tellermine", "tellermine 43", "tm-35",
+        "flammenwerfer", "flammenwerfer 41",
+        "zf41",
+        "kwk", "75mm kwk", "88mm kwk", "20mm kwk",
+        "panther", "panzer", "tiger", "luchs", "puma", "sd.kfz", "kubelwagen",
+        "stuh", "sturmpanzer", "strumpanzer", "brumm",
+        "marder", "opel blitz",
+        "pak40", "pak 40",
+        "lefh", "sfh", "150mm",
+    ];
+
+    const ALLIED_SIGS = [
+        "m1 garand", "garand",
+        "m1 carbine", "carbine",
+        "thompson", "m1a1 thompson",
+        "m1918a2 bar", "m1918a2",
+        "m1911", "colt m1911",
+        "m1903", "m1903 springfield", "springfield",
+        "m97 trench gun",
+        "grease gun", "m3 grease gun",
+        "browning m1919",
+        "mk2 grenade", "mk2",
+        "m2 ap mine", "m2 flamethrower",
+        "bazooka",
+        "75mm cannon [sherman", "76mm m1",
+        "coaxial m1919", "hull m1919",
+        "stuart", "sherman", "greyhound", "m8 greyhound", "jumbo",
+        "m4a1", "m4a3", "m5a1", "m8a1",
+        "105mm howitzer [m4a3", "155mm howitzer", "m114",
+        "lee-enfield", "enfield", "sten", "piat", "lewis",
+        "17 pounder", "17pdr", "qf 75mm", "qf 6 pounder", "qf 2 pounder",
+        "churchill", "cromwell", "firefly", "crusader", "tetrarch", "daimler",
+        "mosin", "mosin-nagant", "ppsh", "svt", "svt-40", "svt40", "tokarev",
+        "dp-27", "dp27", "rg-42 grenade", "pomz",
+        "t-34", "t34", "t-70", "t70", "is-1", "is-2", "is1", "is2",
+        "ba-10", "ba10", "kv-1", "kv1", "kv-2",
+        "76mm zis", "76mm f-34", "zis-2", "zis-3",
+        "122mm", "katyusha",
+        "willys", "jeep willys",
+    ];
 
     const CAT_MAP = {
         infantry: ["garand", "thompson", "carbine", "springfield", "m1911", "grease", "sten", "enfield", "mosin", "ppsh", "svt40", "tokarev", "nagant", "kar98", "mp40", "stg44", "gewehr", "p38", "luger", "walther", "stielhandgranate"],
@@ -128,20 +176,33 @@
     function identifyTeam(p) {
         const t = (p.team || "").toLowerCase();
         if (t.includes("axis") || t.includes("ger")) return "Axis";
-        if (t.includes("allie") || t.includes("us") || t.includes("uk") || t.includes("soviet")) return "Allies";
-        // Weighted majority: sum kills from Axis-sig weapons vs total tracked kills.
-        // CRCON records the destroyed vehicle name as the "weapon" for crew kills inside it,
-        // so a player who destroys an enemy tank gets that tank in their weapons dict.
-        // Any-match would misidentify them as Axis — majority vote by kill count prevents this.
-        let axisKills = 0, totalKills = 0;
+        if (t.includes("allie") || t.includes("us") || t.includes("uk") || t.includes("brit") || t.includes("soviet") || t.includes("russ")) return "Allies";
+
+        let axisKills = 0;
+        let alliedKills = 0;
+        let totalTracked = 0;
+
         Object.entries(p.weapons || {}).forEach(([name, val]) => {
+            const nl = name.toLowerCase();
             const k = weaponKillValue(val);
             if (k <= 0) return;
-            totalKills += k;
-            if (AXIS_SIGS.some(s => name.toLowerCase().includes(s))) axisKills += k;
+
+            const isAxis = AXIS_SIGS.some(s => nl.includes(s));
+            const isAllied = ALLIED_SIGS.some(s => nl.includes(s));
+
+            if (!isAxis && !isAllied) return;
+
+            totalTracked += k;
+            if (isAxis) axisKills += k;
+            if (isAllied) alliedKills += k;
         });
-        if (totalKills === 0) return "Allies";
-        return (axisKills / totalKills) > 0.5 ? "Axis" : "Allies";
+
+        if (axisKills > 0 && alliedKills === 0) return "Axis";
+        if (alliedKills > 0 && axisKills === 0) return "Allies";
+        if (axisKills > 0 || alliedKills > 0) return axisKills > alliedKills ? "Axis" : "Allies";
+
+        if (totalTracked === 0) return "Allies";
+        return "Allies";
     }
 
     // Weapons containing these are ALWAYS artillery — never armor/infantry
@@ -369,23 +430,54 @@
             });
             document.getElementById("killers-list").innerHTML = kHtml;
 
-            // KILLDIFF BARS
-            const teams = { "Allies": [], "Axis": [] };
-            players.forEach(p => teams[identifyTeam(p)].push(p));
+            // KILLDIFF BARS — counted from death_by_weapons to avoid crew kill duplication.
+            // Each kill = 1 death event, regardless of how many tank crew members get attacker credit.
+            const deathKills = { Allies: {}, Axis: {} };
+
+            players.forEach(p => {
+                Object.entries(p.death_by_weapons || {}).forEach(([weapon, rawVal]) => {
+                    const deaths = weaponKillValue(rawVal);
+                    if (deaths <= 0) return;
+                    const n = weapon.toLowerCase();
+                    const isAllied = ALLIED_SIGS.some(s => n.includes(s));
+                    const isAxis   = AXIS_SIGS.some(s => n.includes(s));
+                    let side = null;
+                    if (isAllied && !isAxis) side = "Allies";
+                    else if (isAxis && !isAllied) side = "Axis";
+                    if (!side) return;
+                    deathKills[side][weapon] = (deathKills[side][weapon] || 0) + deaths;
+                });
+            });
+
+            // Map a weapon name to its display category
+            function weaponCategory(weapon) {
+                const nl = weapon.toLowerCase();
+                if (ARTY_OVERRIDES.some(k => nl.includes(k)) || ARTILLERY_KEYWORDS.some(k => nl.includes(k))) return "artillery";
+                if (isATWeaponName(nl)) return "rocket";
+                if (isSniperWeaponName(nl)) return "sniper";
+                if (isArmorWeaponName(nl)) return "armor";  // armor before mg: coaxial/hull MGs on tanks → armor
+                if (CAT_MAP.mg.some(k => nl.includes(k))) return "mg";
+                if (CAT_MAP.satchel.some(k => nl.includes(k))) return "satchel";
+                return "infantry";
+            }
+
+            function getDeathKills(side, cat) {
+                let total = 0;
+                Object.entries(deathKills[side]).forEach(([weapon, kills]) => {
+                    if (weaponCategory(weapon) === cat) total += kills;
+                });
+                return total;
+            }
 
             let tHtml = "";
             const categories = ["infantry", "sniper", "mg", "armor", "rocket", "artillery", "satchel"];
-            let totalA = 0, totalX = 0;
 
             categories.forEach(cat => {
-                const aVal = getKills(teams["Allies"], cat);
-                const xVal = getKills(teams["Axis"], cat);
-                totalA += aVal; totalX += xVal;
-                
+                const aVal = getDeathKills("Allies", cat);
+                const xVal = getDeathKills("Axis", cat);
                 const total = (aVal + xVal) || 1;
-                const aPct = (aVal / total) * 100;
-
-                const leftScore = swapped ? xVal : aVal;
+                const aPct  = (aVal / total) * 100;
+                const leftScore  = swapped ? xVal : aVal;
                 const rightScore = swapped ? aVal : xVal;
 
                 tHtml += `
@@ -402,9 +494,11 @@
                     </div>`;
             });
 
-            // Total Kills Row
-            const tLeftScore = swapped ? totalX : totalA;
-            const tRightScore = swapped ? totalA : totalX;
+            const alliesTotal = Object.values(deathKills["Allies"]).reduce((s, v) => s + v, 0);
+            const axisTotal   = Object.values(deathKills["Axis"]).reduce((s, v) => s + v, 0);
+            const tLeftScore  = swapped ? axisTotal  : alliesTotal;
+            const tRightScore = swapped ? alliesTotal : axisTotal;
+
             tHtml += `
                 <div class="s-row" style="margin-top:20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:10px;">
                     <div class="s-info">
