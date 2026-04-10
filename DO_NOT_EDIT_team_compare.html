@@ -12,35 +12,128 @@
             --accent: #ac2e2e;
             --border: 1px solid rgba(255, 255, 255, 0.12);
         }
-        html, body { 
-            margin: 0; padding: 0; width: 3840px; height: 2160px; 
-            background: transparent; color: white; font-family: 'Oswald', sans-serif;
-            overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center;
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 3840px;
+            height: 2160px;
+            background: transparent;
+            color: white;
+            font-family: 'Oswald', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
+
         .compare-card {
-            width: 1600px; background: var(--bg); border: var(--border);
-            border-radius: 20px; padding: 60px; backdrop-filter: blur(20px);
+            width: 1600px;
+            background: var(--bg);
+            border: var(--border);
+            border-radius: 20px;
+            padding: 60px;
+            backdrop-filter: blur(20px);
             box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-            border-left: 10px solid var(--accent); border-right: 10px solid var(--accent);
+            border-left: 10px solid var(--accent);
+            border-right: 10px solid var(--accent);
         }
-        .header { display: flex; justify-content: center; align-items: center; margin-bottom: 50px; gap: 80px; }
-        .team-name { font-size: 70px; text-transform: uppercase; letter-spacing: 10px; font-weight: 700; }
-        .kd-mid { font-size: 40px; color: var(--accent); letter-spacing: 5px; font-weight: 700; }
-        
-        .stat-row { display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; margin-bottom: 20px; }
-        .stat-value { font-size: 80px; font-weight: 700; }
-        .stat-name { text-align: center; font-size: 28px; text-transform: uppercase; color: rgba(255,255,255,0.4); letter-spacing: 4px; }
-        
-        .bar-container { grid-column: 1 / span 3; height: 16px; background: rgba(0,0,0,0.3); border-radius: 2px; display: flex; overflow: hidden; margin-bottom: 35px; }
-        .bar { height: 100%; transition: width 0.8s ease-in-out; }
-        
-        .bar-left-blue { background: var(--allies); box-shadow: 0 0 20px rgba(0, 162, 255, 0.4); }
-        .bar-right-red { background: var(--axis); box-shadow: 0 0 20px rgba(255, 60, 0, 0.4); }
-        
-        .left-text { color: var(--allies); text-align: left; }
-        .right-text { color: var(--axis); text-align: right; }
-        
-        #status-bar { margin-top: 30px; font-size: 24px; color: #ff9d00; text-transform: uppercase; letter-spacing: 2px; }
+
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 50px;
+            gap: 80px;
+        }
+
+        .team-name {
+            font-size: 70px;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            font-weight: 700;
+        }
+
+        .kd-mid {
+            font-size: 40px;
+            color: var(--accent);
+            letter-spacing: 5px;
+            font-weight: 700;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-value {
+            font-size: 80px;
+            font-weight: 700;
+        }
+
+        .stat-name {
+            text-align: center;
+            font-size: 28px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 4px;
+        }
+
+        .bar-container {
+            grid-column: 1 / span 3;
+            height: 16px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 2px;
+            display: flex;
+            overflow: hidden;
+            margin-bottom: 35px;
+        }
+
+        .bar {
+            height: 100%;
+            transition: width 0.8s ease-in-out;
+        }
+
+        .bar-left-blue {
+            background: var(--allies);
+            box-shadow: 0 0 20px rgba(0, 162, 255, 0.4);
+        }
+
+        .bar-right-red {
+            background: var(--axis);
+            box-shadow: 0 0 20px rgba(255, 60, 0, 0.4);
+        }
+
+        .left-text {
+            color: var(--allies);
+            text-align: left;
+        }
+
+        .right-text {
+            color: var(--axis);
+            text-align: right;
+        }
+
+        #status-bar {
+            margin-top: 24px;
+            font-size: 24px;
+            color: #ff9d00;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        #debug-bar {
+            margin-top: 8px;
+            font-size: 18px;
+            color: rgba(255,255,255,0.75);
+            letter-spacing: 1px;
+            text-align: center;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -52,282 +145,418 @@
     </div>
     <div id="stats-content"></div>
 </div>
+
 <div id="status-bar">SYNCING COMBAT DATA...</div>
+<div id="debug-bar">DEBUG: WAITING FOR API...</div>
 
 <script>
     const CONFIG_URL = "http://localhost:3000/config";
-    const AXIS_SIGS = ["kar98", "karabiner", "mp40", "mg34", "mg42", "stg44", "fg42", "gewehr", "zf41", "p38", "luger", "walther", "stielhandgranate", "tiger", "panzer", "panther", "puma", "lux", "luchs", "marder", "sd.kfz", "lefh", "sfh", "150mm", "pak40", "panzerfaust", "panzerschreck", "brumm", "stuh", "strumpanzer", "s-mine", "flammenwerfer"];
-    
+
+    const CATEGORY_ORDER = [
+        { id: "infantry",  label: "Infantry" },
+        { id: "sniper",    label: "Sniper" },
+        { id: "mg",        label: "Machine Gun" },
+        { id: "armor",     label: "Armor" },
+        { id: "rocket",    label: "Anti-Tank" },
+        { id: "artillery", label: "Artillery" },
+        { id: "satchel",   label: "Satchel" }
+    ];
+
+    const AXIS_SIGS = [
+        "mp40", "mp 40",
+        "kar98", "kar98k", "karabiner", "karabiner 98k",
+        "mg42", "mg34",
+        "stg44", "stg 44",
+        "gewehr", "fg42", "fg 42",
+        "luger", "p38", "walther",
+        "panzerfaust", "panzerschreck",
+        "stielhandgranate", "m43 stielhandgranate", "m24 stielhandgranate",
+        "s-mine", "tellermine", "tellermine 43",
+        "flammenwerfer", "flammenwerfer 41",
+        "zf41",
+        "kwk", "75mm kwk", "88mm kwk", "20mm kwk",
+        "panther", "panzer", "tiger", "luchs", "puma", "sd.kfz", "kubelwagen",
+        "stuh", "sturmpanzer", "strumpanzer", "brumm",
+        "marder", "opel blitz",
+        "pak40", "pak 40",
+        "lefh", "sfh", "150mm",
+    ];
+
+    const ALLIED_SIGS = [
+        "m1 garand", "garand",
+        "m1 carbine", "carbine",
+        "thompson", "m1a1 thompson",
+        "m1918a2 bar", "m1918a2",
+        "m1911", "colt m1911",
+        "m1903", "m1903 springfield", "springfield",
+        "m97 trench gun",
+        "grease gun", "m3 grease gun",
+        "browning m1919",
+        "mk2 grenade", "mk2",
+        "m2 ap mine", "m2 flamethrower",
+        "bazooka",
+        "75mm cannon [sherman", "76mm m1",
+        "coaxial m1919", "hull m1919",
+        "stuart", "sherman", "greyhound", "m8 greyhound", "jumbo",
+        "m4a1", "m4a3", "m5a1", "m8a1",
+        "105mm howitzer [m4a3", "155mm howitzer", "m114",
+        "lee-enfield", "enfield", "sten", "piat", "lewis",
+        "17 pounder", "17pdr", "qf 75mm", "qf 6 pounder", "qf 2 pounder",
+        "churchill", "cromwell", "firefly", "crusader", "tetrarch", "daimler",
+        "mosin", "mosin-nagant", "ppsh", "svt", "svt-40", "svt40", "tokarev",
+        "dp-27", "dp27", "rg-42 grenade",
+        "t-34", "t34", "t-70", "t70", "is-1", "is-2", "is1", "is2",
+        "ba-10", "ba10", "kv-1", "kv1", "kv-2",
+        "76mm zis", "76mm f-34", "zis-2", "zis-3",
+        "122mm", "katyusha",
+        "willys", "jeep willys",
+    ];
+
     const CAT_MAP = {
-        infantry: ["garand", "thompson", "carbine", "springfield", "m1911", "grease", "sten", "enfield", "mosin", "ppsh", "svt40", "tokarev", "nagant", "kar98", "mp40", "stg44", "gewehr", "p38", "luger", "walther", "stielhandgranate"],
-        mg: ["mg34", "mg42", "m1919", "browning", "lewis", "dp-27", "dp27"],
-        armor: ["tiger", "panzer", "panther", "puma", "lux", "luchs", "marder", "sd.kfz", "stuart", "sherman", "is2", "t34", "75mm kwk", "75mm m3", "75mm cannon", "76mm m1", "76mm zis", "76mm f-34", "88mm kwk", "17 pounder", "qf 75mm", "qf 6 pounder"],
-        rocket: ["bazooka", "panzerschreck", "piat", "panzerfaust"],
-        artillery: ["artillery", "155mm", "150mm", "105mm", "lefh", "howitzer", "spa 105", "sfh"],
-        satchel: ["satchel", "explosive charge"],
-        sniper:  ["kar98k x8", "kar98k 8x", "karabiner 98k x8", "karabiner 98k 8x", "karabiner 98 k x8", "fg 42 x4", "fg42 x4", "springfield m1903", "m1903", "mosin nagant m91/30 pu", "mosin-nagant m91/30 pu", "svt 40 pu", "svt-40 pu", "lee-enfield l42", "enfield l42", "enfield no.4", "no.4 mk", "rifle no.4", "no.4 mk i sniper", "zf41", "zf 41"]
+        artillery: [
+            "artillery", "howitzer", "155mm", "150mm", "105mm",
+            "bombing run", "precision strike", "strafing run", "m114"
+        ],
+        satchel: [
+            "satchel", "explosive charge"
+        ],
+        rocket: [
+            "bazooka", "panzerschreck", "piat", "panzerfaust"
+        ],
+        sniper: [
+            "zf41", "zf 41", "8x", "x8", "4x", "x4", "pu", "l42",
+            "m1903 springfield", "kar98k x8", "fg42 x4", "fg 42 x4"
+        ],
+        armor: [
+            "75mm kwk", "88mm kwk", "20mm kwk", "kwk",
+            "75mm cannon", "76mm m1", "37mm cannon", "m6 37mm",
+            "coaxial", "hull",
+            "sherman", "stuart", "greyhound",
+            "panther", "panzer", "tiger", "luchs", "puma", "sd.kfz",
+            "t-34", "t34", "is-1", "is-2", "churchill", "cromwell", "firefly",
+            "sturmpanzer", "stuh"
+        ],
+        mg: [
+            "mg42", "mg34", "m1919", "browning", "lewis", "dp-27", "dp27"
+        ],
+        infantry: [
+            "m1 garand", "garand",
+            "m1 carbine", "carbine",
+            "thompson", "m1a1 thompson",
+            "m1918a2 bar", "bar",
+            "m1911", "colt m1911",
+            "m1903", "springfield",
+            "m97 trench gun",
+            "grease gun", "m3 grease gun",
+            "lee-enfield", "enfield", "sten",
+            "mosin", "ppsh", "svt", "svt-40", "tokarev",
+            "kar98", "kar98k", "karabiner",
+            "mp40", "mp 40", "stg44", "stg 44", "gewehr", "fg42", "fg 42",
+            "luger", "p38", "walther",
+            "stielhandgranate", "m43 stielhandgranate",
+            "mk2 grenade", "feldspaten", "unknown"
+        ]
     };
 
-    async function fetchNoCache(url) {
-        return fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" }).then(r => r.json());
-    }
-    async function getConfig() {
-        return fetch(CONFIG_URL).then(r => r.json());
-    }
-
-    function identifyTeam(p) {
-        const t = (p.team || "").toLowerCase();
-        if (t.includes("axis") || t.includes("ger")) return "Axis";
-        if (t.includes("allie") || t.includes("us") || t.includes("uk") || t.includes("soviet")) return "Allies";
-        // Weighted majority: sum kills from Axis-sig weapons vs total tracked kills.
-        // CRCON records the destroyed vehicle name as the "weapon" for crew kills inside it,
-        // so a player who destroys an enemy tank gets that tank in their weapons dict.
-        // Any-match would misidentify them as Axis — majority vote by kill count prevents this.
-        let axisKills = 0, totalKills = 0;
-        Object.entries(p.weapons || {}).forEach(([name, val]) => {
-            const k = weaponKillValue(val);
-            if (k <= 0) return;
-            totalKills += k;
-            if (AXIS_SIGS.some(s => name.toLowerCase().includes(s))) axisKills += k;
-        });
-        if (totalKills === 0) return "Allies";
-        return (axisKills / totalKills) > 0.5 ? "Axis" : "Allies";
-    }
-
-    // Weapons containing these are ALWAYS artillery — never armor/infantry
-    const ARTY_OVERRIDES = ["howitzer", "150mm", "105mm", "155mm", "152mm", "122mm", "lefh", "sfh", "artillery", "brumm", "stuh", "strumpanzer"];
-    // Keep armor crew detection aligned with tank scoreboard overlay.
-    const ARMOR_KEYWORDS = [
-        "panzer", "tiger", "panther", "sherman", "stuart",
-        "firefly", "puma", "lux", "marder", "halftrack", "greyhound",
-        "is-1", "is-2", "is1", "is2", "t-34", "t34", "t-70", "t70", "kv-1", "kv1",
-        "ba-10", "ba10", "sd.kfz", "coaxial", "co-axial", "co axial", "coax", "kwk",
-        "75mm cannon", "75mm m3", "76mm m1", "88mm kwk",
-        "qf 75mm", "qf 6 pounder", "qf 2 pounder",
-        "17pdr", "17 pounder", "hull mg", "hull dt", "hull m1919", "besa",
-        "m4a3", "m4a1", "m5a1", "m8a1"
-    ];
-    const AT_INFANTRY_KEYWORDS = [
-        "bazooka", "panzerschreck", "piat", "panzerfaust", "anti_tank", "m5 at",
-        "pak 40", "pak40",       // German towed AT gun — not a tank
-        "zis-2", "zis-3"         // Soviet towed AT guns — "is-2" substring was falsely matching IS-2 tank
-    ];
-    const INFANTRY_WEAPON_KEYWORDS = [
-        "kar98", "karabiner", "gewehr", "mp40", "stg44", "fg42",
-        "garand", "thompson", "carbine", "springfield", "m1911",
-        "grease", "sten", "enfield", "mosin", "ppsh", "svt40",
-        "tokarev", "nagant", "luger", "walther", "p38"
-    ];
-    const TANK_ROLE_KEYWORDS = ["tank", "armor", "armour", "crewman", "gunner", "driver"];
-    const SNIPER_SCOPE_SIGS = ["8x", "x8", "4x", "x4", "zf4", "zf 4", "zf41", "zf 41", "pu", "l42", "scope", "scoped", "sniper"];
-    const SNIPER_RIFLE_SIGS = ["kar98", "kar98k", "karabiner 98", "karabiner 98k", "m1903", "m1903 springfield", "springfield", "mosin", "gewehr 43", "svt 40", "enfield", "fg42"];
-    const ARTILLERY_KEYWORDS = [
-        "howitzer", "artillery", "lefh", "155mm", "152mm", "150mm", "122mm", "105mm", "sfh",
-        "m114", "m2a1", "mlrs", "katyusha", "pak 43",
-        "zis-3", "zis3", "brumm", "stuh", "strumpanzer", "kv-2", "m-10t", "sherman spa"
-    ];
-    const toNum = (v) => {
+    function toNum(v) {
         const n = Number(v);
         return Number.isFinite(n) ? n : 0;
-    };
-    const weaponKillValue = (raw) => {
+    }
+
+    function weaponKillValue(raw) {
         if (typeof raw === "number" || typeof raw === "string") return toNum(raw);
         if (raw && typeof raw === "object") {
             return toNum(raw.kills ?? raw.kill ?? raw.count ?? raw.value ?? raw.total ?? 0);
         }
         return 0;
-    };
-    const getVehicleKills = (p) => toNum(p?.v_kills ?? p?.vehicle_kills ?? p?.vehicles_destroyed ?? 0);
-    const isATWeaponName = (nameLower) => AT_INFANTRY_KEYWORDS.some(k => nameLower.includes(k));
-    const isInfantryWeaponName = (nameLower) => INFANTRY_WEAPON_KEYWORDS.some(k => nameLower.includes(k));
-    const isArmorWeaponName = (nameLower) =>
-        ARMOR_KEYWORDS.some(k => nameLower.includes(k)) || CAT_MAP.armor.some(k => nameLower.includes(k));
-    const SNIPER_ZOOM_RE = /(^|[^a-z0-9])(x[2-9]|[2-9]x|10x)([^a-z0-9]|$)/;
-    const isSniperWeaponName = (nameLower) => {
-        const normalized = nameLower.replace(/\s+/g, " ").trim();
-        if (CAT_MAP.sniper.some(k => normalized.includes(k))) return true;
-        if (normalized.includes("m1903 springfield")) return true;
-        const hasScopeSig = SNIPER_SCOPE_SIGS.some(k => normalized.includes(k)) || SNIPER_ZOOM_RE.test(normalized);
-        const hasRifleSig = SNIPER_RIFLE_SIGS.some(k => normalized.includes(k));
-        return hasScopeSig && hasRifleSig;
-    };
-    const isSniperRole = (p) => {
-        const roleText = `${p?.role || ""} ${p?.class || ""} ${p?.loadout || ""} ${p?.unit || ""} ${p?.squad || ""}`.toLowerCase();
-        return roleText.includes("sniper") || roleText.includes("marksman");
-    };
-    const hasTankRole = (p) => {
-        const roleText = `${p?.role || ""} ${p?.class || ""} ${p?.loadout || ""} ${p?.unit || ""} ${p?.squad || ""}`.toLowerCase();
-        return TANK_ROLE_KEYWORDS.some(k => roleText.includes(k));
-    };
-    const getArmorWeaponKills = (p) => {
-        let total = 0;
-        Object.entries(p?.weapons || {}).forEach(([name, val]) => {
-            const nl = name.toLowerCase();
-            if (ARTY_OVERRIDES.some(k => nl.includes(k))) return;
-            if (isATWeaponName(nl)) return;
-            if (isInfantryWeaponName(nl)) return;
-            if (isArmorWeaponName(nl)) total += weaponKillValue(val);
-        });
-        return total;
-    };
-    function isArmorCrew(p) {
-        if (!p || typeof p !== "object") return false;
-        const weaponNames = Object.keys(p.weapons || {});
-        const wAll = weaponNames.join(" ").toLowerCase();
-        const vehicleKills = getVehicleKills(p);
-        if (!weaponNames.length) return vehicleKills > 0 && hasTankRole(p);
-        if (ARTILLERY_KEYWORDS.some(k => wAll.includes(k))) return false;
-        const hasArmorWeapon = weaponNames.some(w => {
-            const wl = w.toLowerCase();
-            if (isATWeaponName(wl)) return false;
-            if (isInfantryWeaponName(wl)) return false;
-            return isArmorWeaponName(wl);
-        });
-        const hasATWeapon = weaponNames.some(w => isATWeaponName(w.toLowerCase()));
-        if (hasATWeapon && !hasArmorWeapon) return false;
-        return hasArmorWeapon;
     }
 
-    function getKills(players, cat) {
-        let count = 0;
-        players.forEach(p => {
-            const armorCrew = isArmorCrew(p);
-            // Armor: prefer crew kills from tank weapons, fallback to vehicle kills.
-            // This prevents the armor row showing 0/0 when v_kills is absent or inconsistent.
-            if (cat === 'armor') {
-                if (!armorCrew) return;
-                const tankWeaponKills = getArmorWeaponKills(p);
-                // Only count actual tank-weapon kills when weapon breakdown exists.
-                // This prevents panzerschreck/kar98 spillover into armor totals.
-                if (Object.keys(p.weapons || {}).length) {
-                    count += tankWeaponKills;
-                } else {
-                    count += getVehicleKills(p);
-                }
-                return;
-            }
-            if (!p.weapons) {
-                // No weapon data — if infantry, use full kills as fallback.
-                // Exclude armor crew: their kills are already captured via v_kills in the armor branch.
-                if (!armorCrew && cat === 'infantry') count += (p.kills || 0);
-                return;
-            }
-            // Tally kills per weapon into categories
-            let artyKills = 0, armorKills = 0, mgKills = 0, rocketKills = 0, sniperKills = 0, satchelKills = 0;
-            Object.entries(p.weapons).forEach(([n, v]) => {
-                const nl = n.toLowerCase();
-                const val = weaponKillValue(v);
-                const isArty = ARTY_OVERRIDES.some(k => nl.includes(k));
-                if (isArty) { artyKills += val; return; }
-                if (armorCrew && isArmorWeaponName(nl) && !isATWeaponName(nl)) { armorKills += val; return; }
-                if (CAT_MAP.mg.some(k => nl.includes(k)))      { mgKills += val; return; }
-                if (CAT_MAP.rocket.some(k => nl.includes(k)))  { rocketKills += val; return; }
-                if (isSniperWeaponName(nl))                     { sniperKills += val; return; }
-                if (CAT_MAP.satchel.some(k => nl.includes(k))) { satchelKills += val; return; }
-            });
-            const totalKills    = Number(p.kills || 0);
-            if (isSniperRole(p)) {
-                const alreadyClassified = artyKills + armorKills + mgKills + rocketKills + sniperKills + satchelKills;
-                const fallbackSniper = Math.max(0, totalKills - alreadyClassified);
-                sniperKills += fallbackSniper;
-            }
-            const otherCatKills = artyKills + armorKills + mgKills + rocketKills + sniperKills + satchelKills;
-            // Infantry = total kills minus kills from all other tracked categories.
-            // Armor kills are subtracted so hull/coaxial doesn't leak into infantry totals.
-            const infantryKills = Math.max(0, totalKills - otherCatKills);
-            if (cat === 'infantry')  { count += infantryKills; return; }
-            if (cat === 'artillery') { count += artyKills; return; }
-            if (cat === 'mg')        { count += mgKills; return; }
-            if (cat === 'rocket')    { count += rocketKills; return; }
-            if (cat === 'sniper')    { count += sniperKills; return; }
-            if (cat === 'satchel')   { count += satchelKills; return; }
-        });
-        return count;
+    function cleanKills(p) {
+        return Math.max(0, toNum(p?.kills) - toNum(p?.teamkills));
     }
 
-    // Fast config poll — runs every 1s so hub changes apply instantly
-    let cachedConfig = { api_endpoint: "", swap_sides: false, allied_faction: "ALLIES" };
-    let lastSwap = null;
+    function emptyCategories() {
+        return {
+            infantry: 0,
+            sniper: 0,
+            mg: 0,
+            armor: 0,
+            rocket: 0,
+            artillery: 0,
+            satchel: 0
+        };
+    }
+
+    function dedupePlayers(players) {
+        const map = new Map();
+
+        for (const p of players || []) {
+            const key = p.player_id || p.player || p?.steaminfo?.id;
+            if (!key) continue;
+
+            const existing = map.get(key);
+            if (!existing) {
+                map.set(key, p);
+                continue;
+            }
+
+            const currentKills = cleanKills(p);
+            const existingKills = cleanKills(existing);
+            const currentDeaths = toNum(p?.deaths);
+            const existingDeaths = toNum(existing?.deaths);
+            const currentTime = toNum(p?.time_seconds);
+            const existingTime = toNum(existing?.time_seconds);
+
+            if (
+                currentKills > existingKills ||
+                (currentKills === existingKills && currentDeaths > existingDeaths) ||
+                (currentKills === existingKills && currentDeaths === existingDeaths && currentTime > existingTime)
+            ) {
+                map.set(key, p);
+            }
+        }
+
+        return Array.from(map.values());
+    }
+
+    function scoreWeaponsMap(obj, sigs) {
+        let score = 0;
+        for (const [name, rawVal] of Object.entries(obj || {})) {
+            const amount = weaponKillValue(rawVal);
+            if (amount <= 0) continue;
+            const n = String(name || "").toLowerCase();
+            if (sigs.some(sig => n.includes(sig))) score += amount;
+        }
+        return score;
+    }
+
+    function identifyTeam(p) {
+        const t = String(p?.team || "").trim().toLowerCase();
+
+        // All Allied factions: US, Soviet, British, Canadian
+        if (
+            t.includes("allies") || t.includes("allied") ||
+            t.includes("us") || t.includes("usa") || t.includes("american") ||
+            t.includes("soviet") || t.includes("ussr") || t.includes("russia") ||
+            t.includes("british") || t.includes("britain") || t.includes("uk") ||
+            t.includes("canadian") || t.includes("canada")
+        ) return "Allies";
+
+        // All Axis factions: Wehrmacht, Waffen-SS, Luftwaffe
+        if (
+            t.includes("axis") || t.includes("german") || t.includes("ger") ||
+            t.includes("deutsch") || t.includes("waffen") || t.includes("luftwaffe")
+        ) return "Axis";
+
+        const weaponAllied = scoreWeaponsMap(p?.weapons || {}, ALLIED_SIGS);
+        const weaponAxis = scoreWeaponsMap(p?.weapons || {}, AXIS_SIGS);
+
+        if (weaponAllied > weaponAxis) return "Allies";
+        if (weaponAxis > weaponAllied) return "Axis";
+
+        const deathByAllied = scoreWeaponsMap(p?.death_by_weapons || {}, ALLIED_SIGS);
+        const deathByAxis = scoreWeaponsMap(p?.death_by_weapons || {}, AXIS_SIGS);
+
+        if (deathByAxis > deathByAllied) return "Allies";
+        if (deathByAllied > deathByAxis) return "Axis";
+
+        return null;
+    }
+
+    function getCategoryForWeapon(name) {
+        const n = String(name || "").toLowerCase();
+
+        for (const cat of ["artillery", "satchel", "rocket", "sniper", "armor", "mg", "infantry"]) {
+            if (CAT_MAP[cat].some(sig => n.includes(sig))) return cat;
+        }
+
+        return "infantry";
+    }
+
+    function allocatePlayerCategories(p) {
+        const result = emptyCategories();
+        const total = cleanKills(p);
+        if (total <= 0) return result;
+
+        const weapons = p?.weapons || {};
+        let assigned = 0;
+
+        for (const [name, rawVal] of Object.entries(weapons)) {
+            let kills = weaponKillValue(rawVal);
+            if (kills <= 0) continue;
+
+            const remaining = total - assigned;
+            if (remaining <= 0) break;
+
+            kills = Math.min(kills, remaining);
+            const cat = getCategoryForWeapon(name);
+            result[cat] += kills;
+            assigned += kills;
+        }
+
+        const leftover = total - assigned;
+        if (leftover > 0) result.infantry += leftover;
+
+        return result;
+    }
+
+    function isZeroedPlayer(p) {
+        return (
+            toNum(p?.kills) === 0 &&
+            toNum(p?.deaths) === 0 &&
+            toNum(p?.combat) === 0 &&
+            toNum(p?.offense) === 0 &&
+            toNum(p?.defense) === 0 &&
+            toNum(p?.support) === 0
+        );
+    }
+
+    function shouldResetFromSnapshot(players, previousTotalKills) {
+        const active = (players || []).filter(p => toNum(p?.time_seconds) > 0);
+        if (active.length < 30) return false;
+        if (previousTotalKills <= 50) return false;
+
+        const zeroedCount = active.filter(isZeroedPlayer).length;
+        const zeroRatio = zeroedCount / active.length;
+
+        return zeroRatio >= 0.8;
+    }
+
+    async function fetchNoCache(url) {
+        const full = url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+        const res = await fetch(full, { cache: "no-store" });
+        return res.json();
+    }
+
+    let cachedConfig = {
+        api_endpoint: "",
+        swap_sides: false,
+        allied_faction: "ALLIES",
+        axis_faction: "GERMANY"
+    };
     async function pollConfig() {
         try {
             const r = await fetch(CONFIG_URL + "?t=" + Date.now(), { cache: "no-store" });
             if (!r.ok) throw new Error("config " + r.status);
+
             const cfg = await r.json();
             if (cfg && cfg.api_endpoint !== undefined) {
                 cachedConfig = cfg;
-                if (lastSwap !== null && lastSwap !== cfg.swap_sides) { update(); }
+                if (lastSwap !== null && lastSwap !== cfg.swap_sides) update();
                 lastSwap = cfg.swap_sides;
             }
-        } catch(e) { console.warn("[HLL] pollConfig failed:", e.message); }
+        } catch (e) {
+            console.warn("[HLL] pollConfig failed:", e.message);
+        }
     }
 
     async function update() {
         try {
             const settings = cachedConfig;
-            if (!settings.api_endpoint) { document.getElementById("status-bar").innerText = "AWAITING API — CHECK HUB"; return; }
+
+            if (!settings.api_endpoint) {
+                document.getElementById("status-bar").innerText = "AWAITING API — CHECK HUB";
+                document.getElementById("debug-bar").innerText = "DEBUG: NO API";
+                return;
+            }
+
             const data = await fetchNoCache(settings.api_endpoint);
-            const players = data?.result?.stats || [];
-            const swapped = settings.swap_sides;
-            const alliedName = settings.allied_faction || "ALLIES";
-            const axisName   = "GERMANY";
+            const rawPlayers = data?.result?.stats || [];
+            const deduped = dedupePlayers(rawPlayers);
 
-            const teams = { "Allies": [], "Axis": [] };
-            players.forEach(p => teams[identifyTeam(p)].push(p));
+            // ── Count kills by weapon faction directly.
+            // Each weapon kill is attributed to the side that uses that weapon.
+            // No player-level team guessing needed — a kill with MG42 is an Axis
+            // kill regardless of who fired it. This handles cross-faction weapon
+            // use (captured weapons) and completely avoids team misidentification.
 
-            // Default: Allies Left, Axis Right
-            // Swapped: Axis Left, Allies Right
-            const leftTeamName  = swapped ? axisName   : alliedName;
-            const rightTeamName = swapped ? alliedName : axisName;
-            
-            document.getElementById("left-label").innerText = leftTeamName;
-            document.getElementById("right-label").innerText = rightTeamName;
+            const teams = {
+                Allies: { total: 0, cats: emptyCategories(), players: new Set() },
+                Axis:   { total: 0, cats: emptyCategories(), players: new Set() }
+            };
 
-            const rows = [
-                { id: "infantry",  label: "Infantry"    },
-                { id: "sniper",    label: "Sniper"      },
-                { id: "mg",        label: "Machine Gun" },
-                { id: "armor",     label: "Armor"       },
-                { id: "rocket",    label: "Anti-Tank"   },
-                { id: "artillery", label: "Artillery"   },
-                { id: "satchel",   label: "Satchel"     }
-            ];
+            let unknownKills = 0;
+
+            // Count kills from the VICTIM's death_by_weapons rather than the
+            // attacker's weapons list. This eliminates crew-sharing inflation:
+            // a tank kill credits all 3 crew members in the attacker's weapons,
+            // but the victim only dies ONCE — so death_by_weapons counts it once.
+            for (const p of deduped) {
+                for (const [weapon, rawVal] of Object.entries(p.death_by_weapons || {})) {
+                    const deaths = weaponKillValue(rawVal);
+                    if (deaths <= 0) continue;
+
+                    const n = String(weapon).toLowerCase();
+                    const isAllied = ALLIED_SIGS.some(sig => n.includes(sig));
+                    const isAxis   = AXIS_SIGS.some(sig => n.includes(sig));
+
+                    // Allied weapon killed this player → Allied team scored a kill
+                    // Axis weapon killed this player → Axis team scored a kill
+                    let side = null;
+                    if (isAllied && !isAxis) side = "Allies";
+                    else if (isAxis && !isAllied) side = "Axis";
+
+                    if (!side) { unknownKills += deaths; continue; }
+
+                    const cat = getCategoryForWeapon(weapon);
+                    teams[side].total += deaths;
+                    teams[side].cats[cat] += deaths;
+                }
+            }
+
+            const swapped     = settings.swap_sides === true;
+            const alliedName  = settings.allied_faction || "ALLIES";
+            const axisName    = settings.axis_faction   || "GERMANY";
+
+            const leftTeamKey  = swapped ? "Axis"   : "Allies";
+            const rightTeamKey = swapped ? "Allies" : "Axis";
+
+            document.getElementById("left-label").innerText  = swapped ? axisName   : alliedName;
+            document.getElementById("right-label").innerText = swapped ? alliedName : axisName;
 
             let html = "";
-            let totalL = 0, totalR = 0;
 
-            rows.forEach(row => {
-                const aVal = getKills(teams["Allies"], row.id);
-                const xVal = getKills(teams["Axis"], row.id);
-                const valL = swapped ? xVal : aVal;
-                const valR = swapped ? aVal : xVal;
-                totalL += valL;
-                totalR += valR;
-                const leftBarPct = (valL / (valL + valR || 1)) * 100;
+            CATEGORY_ORDER.forEach(row => {
+                const leftVal  = teams[leftTeamKey].cats[row.id]  || 0;
+                const rightVal = teams[rightTeamKey].cats[row.id] || 0;
+                const pct = (leftVal / ((leftVal + rightVal) || 1)) * 100;
 
                 html += `
                     <div class="stat-row">
-                        <div class="stat-value left-text">${valL}</div>
+                        <div class="stat-value left-text">${leftVal}</div>
                         <div class="stat-name">${row.label}</div>
-                        <div class="stat-value right-text">${valR}</div>
+                        <div class="stat-value right-text">${rightVal}</div>
                         <div class="bar-container">
-                            <div class="bar bar-left-blue" style="width: ${leftBarPct}%"></div>
-                            <div class="bar bar-right-red" style="width: ${100 - leftBarPct}%"></div>
+                            <div class="bar bar-left-blue" style="width:${pct}%"></div>
+                            <div class="bar bar-right-red" style="width:${100 - pct}%"></div>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
 
-            // Total kills row at bottom
+            const totalL = teams[leftTeamKey].total;
+            const totalR = teams[rightTeamKey].total;
+
             html += `
                 <div class="stat-row" style="margin-top:20px; border-top: 2px solid rgba(255,255,255,0.08); padding-top:15px;">
                     <div class="stat-value left-text" style="font-size:90px">${totalL}</div>
                     <div class="stat-name" style="color:var(--accent); font-weight:700; font-size:22px;">TOTAL KILLS</div>
                     <div class="stat-value right-text" style="font-size:90px">${totalR}</div>
-                </div>`;
+                </div>
+            `;
 
             document.getElementById("stats-content").innerHTML = html;
-            document.getElementById("status-bar").innerText = `SIGNAL SECURE | SYNCED: ${players.length} PLAYERS`;
+            document.getElementById("status-bar").innerText =
+                `SIGNAL SECURE | SYNCED: ${deduped.length} PLAYERS`;
 
-        } catch (e) { document.getElementById("status-bar").innerText = "SIGNAL LOST"; }
+            document.getElementById("debug-bar").innerText =
+                `DEBUG | RAW=${rawPlayers.length} | DEDUPED=${deduped.length} | ALLIES=${totalL} | AXIS=${totalR} | UNKNOWN_DEATHS=${unknownKills} | MODE=death_by_weapons`;
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById("status-bar").innerText = "SIGNAL LOST";
+            document.getElementById("debug-bar").innerText = "DEBUG: ERROR — " + e.message;
+        }
     }
     pollConfig().then(() => update());
     setInterval(pollConfig, 1000);
