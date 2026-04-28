@@ -34,7 +34,7 @@
         
         .player-row {
             display: grid; 
-            grid-template-columns: 90px 1fr 240px 240px; 
+            grid-template-columns: 90px 1fr 260px; 
             align-items: center;
             padding: 35px; margin-bottom: 15px; background: rgba(255,255,255,0.03);
             border-radius: 10px; border-left: 18px solid #333;
@@ -98,7 +98,6 @@ function render(hunters) {
                     <div class="p-name" style="color:${h.side === 'allies' ? 'var(--allies)' : 'var(--axis)'}">${h.name}</div>
                     <div class="p-side-label">${h.displaySide} AT SPECIALIST</div>
                 </div>
-                <div class="stat-box"><span class="stat-val">${h.tanks}</span><span class="stat-label">Vehicles</span></div>
                 <div class="stat-box"><span class="stat-val" style="color:#aaa">${h.rockets}</span><span class="stat-label">Rocket Kills</span></div>
             </div>`;
         } else {
@@ -106,7 +105,6 @@ function render(hunters) {
             <div class="player-row empty-slot">
                 <div class="p-rank">0${i+1}</div>
                 <div><div class="p-name">AWAITING TARGET</div><div class="p-side-label">AWAITING DATA</div></div>
-                <div class="stat-box"><span class="stat-val">-</span><span class="stat-label">Vehicles</span></div>
                 <div class="stat-box"><span class="stat-val">-</span><span class="stat-label">Rocket Kills</span></div>
             </div>`;
         }
@@ -144,8 +142,6 @@ async function update() {
                     if (AT_KEYS.some(k => w.toLowerCase().includes(k))) rocketKills += count;
                 });
             }
-            const tankKills = p.v_kills || 0;
-            
             // Core Identity Logic
             let detectedSide = "allies";
             const wKeys = Object.keys(p.weapons || {}).join(" ").toLowerCase();
@@ -161,14 +157,13 @@ async function update() {
 
             return { 
                 name: p.player, 
-                tanks: tankKills, 
                 rockets: rocketKills, 
                 side: finalSide,
                 displaySide: finalSide === "allies" ? (swapped ? axisName : alliedName) : (swapped ? alliedName : axisName)
             };
         })
-        .filter(h => h.tanks > 0 || h.rockets > 0)
-        .sort((a,b) => (b.tanks * 100 + b.rockets) - (a.tanks * 100 + a.rockets))
+        .filter(h => h.rockets > 0)
+        .sort((a,b) => b.rockets - a.rockets)
         .slice(0, 5);
 
         render(hunters);

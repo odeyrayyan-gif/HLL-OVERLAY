@@ -1,3 +1,9 @@
+v2.0.7
+Removed Vehicle Kills column from AT Leaderboard — live get_live_game_stats payload does not provide a reliable explicit per-player vehicle-destroy count
+AT Leaderboard now ranks and displays by Rocket Kills only for consistent, trustworthy output
+Removed V.KLS column from Tank Scoreboard — avoids showing misleading zeros when vehicle-destroy totals are unavailable in live stats
+Tank Scoreboard now focuses on stable metrics: crew, tank type, infantry kills, and K/D
+
 v2.0.6
 Fixed Spotlight player search reliability — live player list now refreshes on demand while typing, preventing missing names in dropdown suggestions
 Fixed Spotlight suggestion selection for special-character names — safe encoding/decoding now preserves exact names when selected
