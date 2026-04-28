@@ -144,13 +144,11 @@
 
 <script>
     const CONFIG_URL     = "http://localhost:3000/config";
-    const MAX_ENTRIES          = 5;
-    const POLL_MS              = 700;
-    const RENDER_TICK_MS       = 60;
-    const ENTRY_LIFETIME       = 10000;
-    const MAX_QUEUE_SIZE       = 80;
-    const MIN_SCHEDULE_GAP_MS  = 120;
-    const MAX_SCHEDULE_GAP_MS  = 360;
+    const MAX_ENTRIES               = 5;
+    const POLL_MS                   = 850;
+    const RENDER_INTERVAL_MS        = 420;
+    const MAX_QUEUE_SIZE            = 140;
+    const MAX_EVENTS_PER_PLAYER_TICK = 8;
 
     const AXIS_SIGS = [
         "kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
@@ -162,8 +160,7 @@
     let cachedConfig = { api_endpoint: "", swap_sides: false, allied_faction: "ALLIES" };
     let feedEntries  = [];
     let pendingEntries = [];
-    let nextScheduledReleaseAt = 0;
-    let lastPollAt = Date.now();
+    let droppedQueueCount = 0;
     let pollInFlight = false;
 
     // Per-player previous state: { kills, deaths, team, topWeapon }
@@ -353,10 +350,10 @@
     }
 
     // ── Add entry to feed ──
-    function addEntry(killer, victim, weapon, killerTeam) {
+    function addEntry(killer, victim, weapon, killerTeam, forcedColor) {
         const swapped      = cachedConfig.swap_sides === true;
         const isInLeftSlot = swapped ? (killerTeam === "Axis") : (killerTeam === "Allies");
-        const color        = isInLeftSlot ? "#00a2ff" : "#ff3c00";
+        const color        = forcedColor || (isInLeftSlot ? "#00a2ff" : "#ff3c00");
         const weaponClean  = weapon || "Unknown";
 
         const el = document.createElement("div");
@@ -379,59 +376,33 @@
             old.classList.add("fade-out");
             setTimeout(() => old.remove(), 400);
         }
-
-        setTimeout(() => {
-            if (el.parentNode) {
-                el.classList.add("fade-out");
-                setTimeout(() => {
-                    el.remove();
-                    feedEntries = feedEntries.filter(e => e !== el);
-                }, 400);
-            }
-        }, ENTRY_LIFETIME);
     }
 
-    function trimPendingQueue() {
+    function queueEntries(entries) {
+        if (!entries.length) return;
+        pendingEntries.push(...entries);
         if (pendingEntries.length <= MAX_QUEUE_SIZE) return;
         const overflow = pendingEntries.length - MAX_QUEUE_SIZE;
-        pendingEntries.splice(0, overflow);
+        pendingEntries.splice(0, overflow); // drop oldest queued events first
+        droppedQueueCount += overflow;
     }
 
-    // ── Schedule kill entries across the elapsed poll window ──
-    function queueScheduledEntries(entries, pollWindowMs) {
-        if (!entries.length) return null;
-        const now = Date.now();
-        const spacing = Math.max(
-            MIN_SCHEDULE_GAP_MS,
-            Math.min(MAX_SCHEDULE_GAP_MS, Math.floor(pollWindowMs / Math.max(entries.length, 1)))
-        );
-        let releaseAt = Math.max(now + 40, nextScheduledReleaseAt);
-
-        entries.forEach(entry => {
-            pendingEntries.push({ ...entry, releaseAt });
-            releaseAt += spacing;
-        });
-
-        nextScheduledReleaseAt = releaseAt;
-        trimPendingQueue();
-        return spacing;
-    }
-
-    function flushDueQueuedEntry() {
+    function renderNextFeedItem() {
+        if (droppedQueueCount > 0) {
+            const dropped = droppedQueueCount;
+            droppedQueueCount = 0;
+            addEntry("Peak Action", `+${dropped} events`, "Summary", null, "#b68cff");
+            return;
+        }
         if (!pendingEntries.length) return;
-        if (pendingEntries[0].releaseAt > Date.now()) return;
         const next = pendingEntries.shift();
         addEntry(next.killer, next.victim, next.weapon, next.killerTeam);
-        if (!pendingEntries.length) nextScheduledReleaseAt = 0;
     }
 
     // ── Main poll ──
     async function poll() {
         if (pollInFlight) return;
         pollInFlight = true;
-        const pollStartedAt = Date.now();
-        const pollWindowMs = Math.max(250, Math.min(2000, pollStartedAt - lastPollAt));
-        lastPollAt = pollStartedAt;
 
         const api = cachedConfig.api_endpoint;
         if (!api) {
@@ -483,13 +454,13 @@
 
                 if (killDelta > 0) {
                     const weapon = getTopWeapon(prev.weapons, p.weapons);
-                    for (let i = 0; i < Math.min(killDelta, 3); i++) {
+                    for (let i = 0; i < Math.min(killDelta, MAX_EVENTS_PER_PLAYER_TICK); i++) {
                         killers.push({ name: p.player, team: currTeam, weapon });
                     }
                 }
 
                 if (deathDelta > 0) {
-                    for (let i = 0; i < Math.min(deathDelta, 3); i++) {
+                    for (let i = 0; i < Math.min(deathDelta, MAX_EVENTS_PER_PLAYER_TICK); i++) {
                         newDeaths.push({ name: p.player, team: currTeam });
                     }
                 }
@@ -521,13 +492,15 @@
                 });
             });
 
-            const scheduledGap = queueScheduledEntries(batch, pollWindowMs);
+            queueEntries(batch);
 
             if (killers.length) {
                 document.getElementById("debug").textContent =
-                    `Detected +${killers.length} | Queue: ${pendingEntries.length} | Pace: ${scheduledGap || "-"}ms`;
+                    `Detected +${killers.length} | Queue: ${pendingEntries.length} | Overflow: ${droppedQueueCount}`;
             } else if (pendingEntries.length) {
                 document.getElementById("debug").textContent = `Streaming queue: ${pendingEntries.length}`;
+            } else if (droppedQueueCount) {
+                document.getElementById("debug").textContent = `Overflow pending summary: +${droppedQueueCount}`;
             } else {
                 document.getElementById("debug").textContent = "Watching...";
             }
@@ -542,7 +515,7 @@
     pollConfig().then(() => poll());
     setInterval(pollConfig, 1000);
     setInterval(poll, POLL_MS);
-    setInterval(flushDueQueuedEntry, RENDER_TICK_MS);
+    setInterval(renderNextFeedItem, RENDER_INTERVAL_MS);
 </script>
 </body>
 </html>

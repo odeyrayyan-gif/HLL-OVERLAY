@@ -1,3 +1,8 @@
+v2.0.11
+Killfeed now runs in calm mode: entries remain in-frame (fixed 5-slot feed) instead of timing out, reducing flicker and visual chaos
+Added controlled steady rendering cadence plus backlog overflow summarization to avoid racing bursts while still signaling high-action periods
+Raised per-player event cap during each poll tick to reduce silent data loss during intense fights
+
 v2.0.10
 Killfeed cadence now uses time-scheduled streaming across each poll window so multi-kill bursts no longer dump in same-size waves
 Added due-time based release logic and tighter poll/render timing to make killfeed feel closer to true live flow
