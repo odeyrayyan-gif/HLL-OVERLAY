@@ -1,3 +1,9 @@
+v2.0.6
+Fixed Spotlight player search reliability — live player list now refreshes on demand while typing, preventing missing names in dropdown suggestions
+Fixed Spotlight suggestion selection for special-character names — safe encoding/decoding now preserves exact names when selected
+Fixed Message Banner reliability — queue now prunes stale entries and de-duplicates pending messages to prevent missed or repeated banner pops
+Improved Message Banner config polling compatibility — now uses current host for /config access to work consistently on localhost and LAN hub access
+
 v2.0.5
 Reworked kill attribution logic — removed reliance on unreliable player team field and switched to weapon-based side detection for improved accuracy across all maps and factions
 Fixed long-standing stat drift — kill totals now calculated from current live snapshot only, eliminating ghost players and cross-map stat carryover
