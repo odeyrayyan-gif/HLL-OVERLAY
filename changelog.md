@@ -1,3 +1,8 @@
+v2.0.9
+Fixed updater reliability issue caused by stale branch-based raw GitHub caching on version.txt
+Updater now resolves latest main commit SHA via GitHub API and downloads version/changelog/overlay files from immutable commit URLs
+Improved updater changelog parsing so both "vX.Y.Z" and "## vX.Y.Z" header styles are recognized correctly
+
 v2.0.8
 Killfeed now uses queued, paced rendering so kills appear smoothly over time instead of bursting in large batches each poll
 Improved killfeed weapon label legibility with larger text, stronger contrast, and clearer visual framing

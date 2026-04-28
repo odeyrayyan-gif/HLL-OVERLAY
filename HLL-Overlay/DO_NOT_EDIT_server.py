@@ -4,7 +4,7 @@ Serves all HTML files and handles config read/write for the hub.
 Run via start.bat — do not close the terminal window while streaming.
 """
 
-import json, os, threading, socket, urllib.request, shutil, sys
+import json, os, threading, socket, urllib.request, shutil, sys, re
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 # Always run from the folder this script lives in
@@ -12,7 +12,11 @@ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # ── AUTO-UPDATER ──────────────────────────────────────────────────────────────
-GITHUB_RAW   = "https://raw.githubusercontent.com/odeyrayyan-gif/HLL-OVERLAY/main/"
+GITHUB_OWNER = "odeyrayyan-gif"
+GITHUB_REPO  = "HLL-OVERLAY"
+GITHUB_REF   = "main"
+GITHUB_RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_OWNER}/{GITHUB_REPO}/"
+GITHUB_API_REF  = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/commits/{GITHUB_REF}"
 VERSION_FILE = "version.txt"
 
 UPDATABLE_FILES = [
@@ -38,16 +42,32 @@ def get_local_version():
     except:
         return "0.0.0"
 
-def get_remote_version():
+def get_remote_ref():
     try:
-        url = GITHUB_RAW + VERSION_FILE + "?t=" + str(os.times()[4])
+        req = urllib.request.Request(
+            GITHUB_API_REF + "?t=" + str(os.times()[4]),
+            headers={"Accept": "application/vnd.github+json", "User-Agent": "HLL-Overlay-Updater"},
+        )
+        with urllib.request.urlopen(req, timeout=5) as r:
+            data = json.loads(r.read().decode())
+        sha = (data.get("sha") or "").strip()
+        return sha or GITHUB_REF
+    except:
+        return GITHUB_REF
+
+def make_raw_url(filename, ref):
+    return GITHUB_RAW_BASE + ref + "/" + filename
+
+def get_remote_version(remote_ref):
+    try:
+        url = make_raw_url(VERSION_FILE, remote_ref) + "?t=" + str(os.times()[4])
         with urllib.request.urlopen(url, timeout=5) as r:
             return r.read().decode().strip().strip("\n").strip()
     except:
         return None
 
-def download_file(filename):
-    url = GITHUB_RAW + filename
+def download_file(filename, remote_ref):
+    url = make_raw_url(filename, remote_ref)
     tmp = filename + ".tmp"
     try:
         urllib.request.urlretrieve(url, tmp)
@@ -62,7 +82,8 @@ def download_file(filename):
 def check_for_updates():
     print("  Checking for updates...")
     local   = get_local_version()
-    remote  = get_remote_version()
+    remote_ref = get_remote_ref()
+    remote  = get_remote_version(remote_ref)
 
     if remote is None:
         print("  Could not reach update server — skipping update check.")
@@ -71,6 +92,7 @@ def check_for_updates():
     # Debug — show exact bytes so any whitespace issues are visible
     print(f"  Local  version: [{local}] ({len(local)} chars)")
     print(f"  Remote version: [{remote}] ({len(remote)} chars)")
+    print(f"  Remote ref: [{remote_ref}]")
 
     if remote == local:
         print(f"  Up to date (v{local})")
@@ -81,7 +103,7 @@ def check_for_updates():
     success = []
     failed  = []
     for fname in UPDATABLE_FILES:
-        if download_file(fname):
+        if download_file(fname, remote_ref):
             success.append(fname)
         else:
             failed.append(fname)
@@ -96,7 +118,7 @@ def check_for_updates():
 
     # Show changelog for the new version only
     try:
-        changelog_url = GITHUB_RAW + "changelog.md?t=" + str(os.times()[4])
+        changelog_url = make_raw_url("changelog.md", remote_ref) + "?t=" + str(os.times()[4])
         with urllib.request.urlopen(changelog_url, timeout=5) as r:
             changelog = r.read().decode()
 
@@ -104,13 +126,16 @@ def check_for_updates():
         lines = changelog.split("\n")
         capture = False
         section = []
+        version_header_re = re.compile(r'^(?:#+\s*)?v(\d+\.\d+\.\d+)\s*$', re.IGNORECASE)
         for line in lines:
-            if line.strip() == f"## v{remote}":
+            stripped = line.strip()
+            m = version_header_re.match(stripped)
+            if m and m.group(1) == remote:
                 capture = True
                 continue
             if capture:
                 # Stop at the next version header
-                if line.startswith("## v"):
+                if version_header_re.match(stripped):
                     break
                 section.append(line)
 

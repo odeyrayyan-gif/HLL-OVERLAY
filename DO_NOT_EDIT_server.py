@@ -4,7 +4,7 @@ Serves all HTML files and handles config read/write for the hub.
 Run via start.bat — do not close the terminal window while streaming.
 """
 
-import json, os, threading, socket, urllib.request, shutil, sys
+import json, os, threading, socket, urllib.request, shutil, sys, time
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 # Always run from the folder this script lives in
@@ -12,8 +12,14 @@ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # ── AUTO-UPDATER ──────────────────────────────────────────────────────────────
-GITHUB_RAW   = "https://raw.githubusercontent.com/odeyrayyan-gif/HLL-OVERLAY/main/"
-VERSION_FILE = "version.txt"
+GITHUB_REPO      = "odeyrayyan-gif/HLL-OVERLAY"
+GITHUB_RAW_MAIN  = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/"
+GITHUB_API_BRANCH = f"https://api.github.com/repos/{GITHUB_REPO}/branches/main"
+VERSION_FILE     = "version.txt"
+REQUEST_HEADERS  = {
+    "User-Agent": "HLL-Overlay-Updater",
+    "Accept": "application/vnd.github+json",
+}
 
 UPDATABLE_FILES = [
     "DO_NOT_EDIT_server.py",
@@ -59,16 +65,40 @@ def get_local_version():
     except:
         return "0.0.0"
 
-def get_remote_version():
+def is_version_header(line):
+    s = (line or "").strip().lower()
+    return s.startswith("## v") or (s.startswith("v") and len(s) > 2 and s[1].isdigit())
+
+def build_raw_url(filename, commit_sha=None):
+    if commit_sha:
+        return f"https://raw.githubusercontent.com/{GITHUB_REPO}/{commit_sha}/{filename}"
+    return GITHUB_RAW_MAIN + filename + "?t=" + str(int(time.time()))
+
+def get_remote_commit_sha():
     try:
-        url = GITHUB_RAW + VERSION_FILE + "?t=" + str(os.times()[4])
-        with urllib.request.urlopen(url, timeout=5) as r:
-            return r.read().decode().strip().strip("\n").strip()
+        req = urllib.request.Request(
+            GITHUB_API_BRANCH + "?t=" + str(int(time.time())),
+            headers=REQUEST_HEADERS
+        )
+        with urllib.request.urlopen(req, timeout=5) as r:
+            data = json.loads(r.read().decode("utf-8", "replace"))
+        sha = ((data.get("commit") or {}).get("sha") or "").strip()
+        return sha or None
     except:
         return None
 
-def download_file(filename):
-    url = GITHUB_RAW + filename
+def get_remote_version(commit_sha=None):
+    try:
+        url = build_raw_url(VERSION_FILE, commit_sha)
+        with urllib.request.urlopen(url, timeout=5) as r:
+            return r.read().decode().strip().strip("\n").strip()
+    except:
+        if commit_sha:
+            return get_remote_version(None)
+        return None
+
+def download_file(filename, commit_sha=None):
+    url = build_raw_url(filename, commit_sha)
     tmp = filename + ".tmp"
     try:
         urllib.request.urlretrieve(url, tmp)
@@ -82,8 +112,13 @@ def download_file(filename):
 
 def check_for_updates():
     print("  Checking for updates...")
-    local   = get_local_version()
-    remote  = get_remote_version()
+    local      = get_local_version()
+    remote_sha = get_remote_commit_sha()
+    if remote_sha:
+        print(f"  Remote commit: {remote_sha[:7]}")
+    else:
+        print("  [!] Could not resolve remote commit SHA — using branch URLs.")
+    remote = get_remote_version(remote_sha)
 
     if remote is None:
         print("  Could not reach update server — skipping update check.")
@@ -102,7 +137,7 @@ def check_for_updates():
     success = []
     failed  = []
     for fname in UPDATABLE_FILES:
-        if download_file(fname):
+        if download_file(fname, remote_sha):
             success.append(fname)
         else:
             failed.append(fname)
@@ -119,7 +154,7 @@ def check_for_updates():
 
     # Show changelog for the new version only
     try:
-        changelog_url = GITHUB_RAW + "changelog.md?t=" + str(os.times()[4])
+        changelog_url = build_raw_url("changelog.md", remote_sha)
         with urllib.request.urlopen(changelog_url, timeout=5) as r:
             changelog = r.read().decode()
 
@@ -128,12 +163,13 @@ def check_for_updates():
         capture = False
         section = []
         for line in lines:
-            if line.strip() == f"## v{remote}":
+            stripped = line.strip()
+            if stripped in (f"## v{remote}", f"v{remote}"):
                 capture = True
                 continue
             if capture:
                 # Stop at the next version header
-                if line.startswith("## v"):
+                if is_version_header(stripped):
                     break
                 section.append(line)
 
