@@ -1,3 +1,8 @@
+v2.0.8
+Killfeed now uses queued, paced rendering so kills appear smoothly over time instead of bursting in large batches each poll
+Improved killfeed weapon label legibility with larger text, stronger contrast, and clearer visual framing
+Killfeed debug status now shows detected kills and queue depth for easier live tuning/troubleshooting
+
 v2.0.7
 Removed Vehicle Kills column from AT Leaderboard — live get_live_game_stats payload does not provide a reliable explicit per-player vehicle-destroy count
 AT Leaderboard now ranks and displays by Rocket Kills only for consistent, trustworthy output

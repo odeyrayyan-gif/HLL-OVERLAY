@@ -89,22 +89,25 @@
 
         .weapon {
             font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            color: rgba(255,255,255,0.45);
-            letter-spacing: 1px;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.92);
+            letter-spacing: 0.7px;
             text-transform: uppercase;
             white-space: nowrap;
-            background: rgba(255,255,255,0.05);
-            padding: 2px 8px;
-            border-radius: 3px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 4px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
             flex-shrink: 0;
-            min-width: 60px;
+            min-width: 72px;
             text-align: center;
         }
 
         .arrow {
-            color: rgba(255,255,255,0.2);
-            font-size: 11px;
+            color: rgba(255,255,255,0.45);
+            font-size: 12px;
             flex-shrink: 0;
         }
 
@@ -143,7 +146,9 @@
     const CONFIG_URL     = "http://localhost:3000/config";
     const MAX_ENTRIES    = 5;
     const POLL_MS        = 1000;
+    const RENDER_MS      = 300;
     const ENTRY_LIFETIME = 10000;
+    const MAX_QUEUE_SIZE = 60;
 
     const AXIS_SIGS = [
         "kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
@@ -154,6 +159,7 @@
 
     let cachedConfig = { api_endpoint: "", swap_sides: false, allied_faction: "ALLIES" };
     let feedEntries  = [];
+    let pendingEntries = [];
 
     // Per-player previous state: { kills, deaths, team, topWeapon }
     let prevStats    = {};
@@ -380,6 +386,18 @@
         }, ENTRY_LIFETIME);
     }
 
+    // ── Queue kill entries and render at a steady cadence ──
+    function queueEntry(killer, victim, weapon, killerTeam) {
+        if (pendingEntries.length >= MAX_QUEUE_SIZE) pendingEntries.shift();
+        pendingEntries.push({ killer, victim, weapon, killerTeam });
+    }
+
+    function flushNextQueuedEntry() {
+        if (!pendingEntries.length) return;
+        const next = pendingEntries.shift();
+        addEntry(next.killer, next.victim, next.weapon, next.killerTeam);
+    }
+
     // ── Main poll ──
     async function poll() {
         const api = cachedConfig.api_endpoint;
@@ -460,11 +478,17 @@
                     ? unmatchedDeaths.splice(victimIdx, 1)[0].name
                     : null;
 
-                addEntry(killer.name, victim || "Enemy", killer.weapon, killer.team);
+                queueEntry(killer.name, victim || "Enemy", killer.weapon, killer.team);
             });
 
-            document.getElementById("debug").textContent =
-                killers.length ? `+${killers.length} kills this tick` : "Watching...";
+            if (killers.length) {
+                document.getElementById("debug").textContent =
+                    `Detected +${killers.length} | Queue: ${pendingEntries.length}`;
+            } else if (pendingEntries.length) {
+                document.getElementById("debug").textContent = `Rendering queue: ${pendingEntries.length}`;
+            } else {
+                document.getElementById("debug").textContent = "Watching...";
+            }
 
         } catch(e) {
             document.getElementById("debug").textContent = "Signal lost: " + e.message;
@@ -474,6 +498,7 @@
     pollConfig().then(() => poll());
     setInterval(pollConfig, 1000);
     setInterval(poll, POLL_MS);
+    setInterval(flushNextQueuedEntry, RENDER_MS);
 </script>
 </body>
 </html>
