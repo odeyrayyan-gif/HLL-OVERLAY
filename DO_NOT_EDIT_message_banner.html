@@ -100,7 +100,7 @@
 </div>
 
 <script>
-    const CONFIG_URL = "http://localhost:3000/config";
+    const CONFIG_URL = `http://${window.location.hostname}:3000/config`;
 
     const PLATFORM_COLORS = {
         twitch: '#9146ff', youtube: '#ff0000', tiktok: '#ffffff',
@@ -136,8 +136,28 @@
             const cfg = await r.json();
             if (cfg && cfg.ticker_messages !== undefined) {
                 tickerMessages = cfg.ticker_messages || [];
+                pruneQueueAgainstActiveMessages();
             }
         } catch(e) {}
+    }
+
+    function isBannerTarget(m) {
+        // Backward compatible: missing target defaults to ticker elsewhere
+        // but for banner we only include explicit banner-targeted messages.
+        return m && m.target === "banner";
+    }
+
+    function messageKey(m) {
+        return String(m.id) + "|" + String(m.text || "");
+    }
+
+    function pruneQueueAgainstActiveMessages() {
+        const activeBannerKeys = new Set(
+            (tickerMessages || [])
+                .filter(m => m.active && isBannerTarget(m))
+                .map(messageKey)
+        );
+        messageQueue = messageQueue.filter(m => activeBannerKeys.has(messageKey(m)));
     }
 
     function shouldShowMessage(m) {
@@ -187,10 +207,14 @@
 
     function processMessages() {
         loopCount++;
-        const active = tickerMessages.filter(m => m.active && m.target === "banner" && shouldShowMessage(m));
+        const active = tickerMessages.filter(m => m.active && isBannerTarget(m) && shouldShowMessage(m));
+        const queuedKeys = new Set(messageQueue.map(messageKey));
         active.forEach(m => {
+            const key = messageKey(m);
+            if (queuedKeys.has(key)) return;
             lastMsgTime[m.id] = Date.now();
             messageQueue.push(m);
+            queuedKeys.add(key);
         });
         if (!isShowing && messageQueue.length > 0) {
             showMessage(messageQueue.shift());

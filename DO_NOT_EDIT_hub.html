@@ -877,17 +877,59 @@
     }
 
     let livePlayerList = [];
+    let livePlayersFetchedAt = 0;
+    let livePlayersFetchInFlight = null;
+
+    function escapeHtml(text) {
+        return String(text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
 
     function scoreMatch(playerName, query) {
-        const pl = playerName.toLowerCase();
+        const pl = String(playerName || '').toLowerCase();
         const ql = query.toLowerCase().trim();
         if (!ql) return -1;
+        if (!pl) return -1;
         if (pl === ql) return 100;
         if (pl.startsWith(ql)) return 90;
         const sepIdx = pl.indexOf(ql);
         if (sepIdx > 0 && ' |_.[('.includes(pl[sepIdx - 1])) return 80;
         if (pl.includes(ql)) return 50;
         return -1;
+    }
+
+    async function ensureLivePlayerList(force) {
+        const now = Date.now();
+        const hasFreshCache = livePlayerList.length > 0 && (now - livePlayersFetchedAt) < 10000;
+        if (!force && hasFreshCache) return true;
+        if (livePlayersFetchInFlight) return livePlayersFetchInFlight;
+        const apiInput = document.getElementById('api');
+        const apiValue = apiInput ? apiInput.value.trim() : '';
+        if (!apiValue) return false;
+
+        livePlayersFetchInFlight = (async () => {
+            try {
+                const pr = await fetch(`${SERVER}/players?t=${Date.now()}`, { cache: 'no-store' });
+                if (!pr.ok) return false;
+                const pd = await pr.json();
+                if (pd && Array.isArray(pd.players)) {
+                    livePlayerList = pd.players;
+                    livePlayersFetchedAt = Date.now();
+                    return true;
+                }
+            } catch(e) {}
+            return false;
+        })();
+
+        try {
+            return await livePlayersFetchInFlight;
+        } finally {
+            livePlayersFetchInFlight = null;
+        }
     }
 
     function renderPlayerSuggestions(query) {
@@ -902,9 +944,10 @@
         if (!scored.length) { box.style.display = 'none'; return; }
         box.innerHTML = scored.map((x, i) => {
             const isBest = i === 0 && x.score >= 80;
-            const name = x.p.player.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-            return '<div onclick="selectPlayerSuggestion(this)" data-name="' + name + '" style="padding:10px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1e2530;' + (isBest ? 'border-left:3px solid #ff9d00;' : '') + '">'
-                + '<div style="flex:1;color:white;font-weight:600;">' + x.p.player + '</div>'
+            const safeName = escapeHtml(x.p.player);
+            const encodedName = encodeURIComponent(x.p.player);
+            return '<div onclick="selectPlayerSuggestion(this)" data-name="' + encodedName + '" style="padding:10px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1e2530;' + (isBest ? 'border-left:3px solid #ff9d00;' : '') + '">'
+                + '<div style="flex:1;color:white;font-weight:600;">' + safeName + '</div>'
                 + '<div style="font-size:10px;color:#4a5568;">K:' + x.p.kills + '</div>'
                 + (isBest ? '<div style="font-size:8px;color:#ff9d00;">BEST</div>' : '')
                 + '</div>';
@@ -913,16 +956,21 @@
     }
 
     function selectPlayerSuggestion(el) {
-        const name = el.getAttribute('data-name');
+        const encoded = el.getAttribute('data-name') || '';
+        let name = '';
+        try { name = decodeURIComponent(encoded); } catch(e) { name = encoded; }
         document.getElementById('player').value = name;
         const box = document.getElementById('playerSuggestions');
         if (box) box.style.display = 'none';
         savePlayer('spotlightHint');
     }
 
-    function onPlayerInput() {
+    async function onPlayerInput() {
         clearTimeout(saveTimer);
         const query = document.getElementById('player').value;
+        if (query.trim()) {
+            await ensureLivePlayerList(false);
+        }
         renderPlayerSuggestions(query);
         saveTimer = setTimeout(() => savePlayer('spotlightHint'), 400);
     }
@@ -1180,12 +1228,8 @@
     async function onPhonePlayerInput() {
         const query = document.getElementById('phone-player').value;
         document.getElementById('player').value = query;
-        if (livePlayerList.length === 0) {
-            try {
-                const pr = await fetch(`${SERVER}/players?t=${Date.now()}`, { cache: 'no-store' });
-                const pd = await pr.json();
-                if (pd && pd.players) livePlayerList = pd.players;
-            } catch(e) {}
+        if (query.trim()) {
+            await ensureLivePlayerList(false);
         }
         const box = document.getElementById('phoneSuggestions');
         if (box && query.trim() && livePlayerList.length > 0) {
@@ -1197,8 +1241,9 @@
             if (scored.length) {
                 box.innerHTML = scored.map((x, i) => {
                     const isBest = i === 0 && x.score >= 80;
-                    const name = x.p.player.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-                    return '<div onclick="selectPhoneSuggestion(this)" ontouchend="selectPhoneSuggestion(this)" data-name="' + name + '" style="padding:14px;font-size:14px;cursor:pointer;border-bottom:1px solid #1e2530;color:white;' + (isBest ? 'border-left:3px solid #ff9d00;' : '') + '">' + x.p.player + ' <span style="font-size:10px;color:#4a5568;">K:' + x.p.kills + '</span></div>';
+                    const safeName = escapeHtml(x.p.player);
+                    const encodedName = encodeURIComponent(x.p.player);
+                    return '<div onclick="selectPhoneSuggestion(this)" ontouchend="selectPhoneSuggestion(this)" data-name="' + encodedName + '" style="padding:14px;font-size:14px;cursor:pointer;border-bottom:1px solid #1e2530;color:white;' + (isBest ? 'border-left:3px solid #ff9d00;' : '') + '">' + safeName + ' <span style="font-size:10px;color:#4a5568;">K:' + x.p.kills + '</span></div>';
                 }).join('');
                 box.style.display = 'block';
             } else { box.style.display = 'none'; }
@@ -1214,8 +1259,10 @@
     }
 
     function selectPhoneSuggestion(el) {
-        if (event) event.preventDefault();
-        const name = el.getAttribute('data-name');
+        if (typeof event !== 'undefined' && event) event.preventDefault();
+        const encoded = el.getAttribute('data-name') || '';
+        let name = '';
+        try { name = decodeURIComponent(encoded); } catch(e) { name = encoded; }
         document.getElementById('phone-player').value = name;
         document.getElementById('player').value = name;
         const box = document.getElementById('phoneSuggestions');
@@ -1264,7 +1311,10 @@
                 try {
                     const pr = await fetch(`${SERVER}/players?t=${Date.now()}`, { cache: 'no-store' });
                     const pd = await pr.json();
-                    if (pd && pd.players) livePlayerList = pd.players;
+                    if (pd && Array.isArray(pd.players)) {
+                        livePlayerList = pd.players;
+                        livePlayersFetchedAt = Date.now();
+                    }
                 } catch(e) {}
             }
 
