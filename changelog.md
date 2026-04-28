@@ -1,3 +1,8 @@
+v2.0.10
+Killfeed cadence now uses time-scheduled streaming across each poll window so multi-kill bursts no longer dump in same-size waves
+Added due-time based release logic and tighter poll/render timing to make killfeed feel closer to true live flow
+Improved killfeed debug readout with pacing visibility (queue depth plus effective spacing)
+
 v2.0.9
 Fixed updater reliability issue caused by stale branch-based raw GitHub caching on version.txt
 Updater now resolves latest main commit SHA via GitHub API and downloads version/changelog/overlay files from immutable commit URLs

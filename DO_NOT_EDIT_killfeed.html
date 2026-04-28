@@ -144,11 +144,13 @@
 
 <script>
     const CONFIG_URL     = "http://localhost:3000/config";
-    const MAX_ENTRIES    = 5;
-    const POLL_MS        = 1000;
-    const RENDER_MS      = 300;
-    const ENTRY_LIFETIME = 10000;
-    const MAX_QUEUE_SIZE = 60;
+    const MAX_ENTRIES          = 5;
+    const POLL_MS              = 700;
+    const RENDER_TICK_MS       = 60;
+    const ENTRY_LIFETIME       = 10000;
+    const MAX_QUEUE_SIZE       = 80;
+    const MIN_SCHEDULE_GAP_MS  = 120;
+    const MAX_SCHEDULE_GAP_MS  = 360;
 
     const AXIS_SIGS = [
         "kar98","mp40","mg34","mg42","stg44","fg42","gewehr","zf41",
@@ -160,6 +162,9 @@
     let cachedConfig = { api_endpoint: "", swap_sides: false, allied_faction: "ALLIES" };
     let feedEntries  = [];
     let pendingEntries = [];
+    let nextScheduledReleaseAt = 0;
+    let lastPollAt = Date.now();
+    let pollInFlight = false;
 
     // Per-player previous state: { kills, deaths, team, topWeapon }
     let prevStats    = {};
@@ -386,23 +391,52 @@
         }, ENTRY_LIFETIME);
     }
 
-    // ── Queue kill entries and render at a steady cadence ──
-    function queueEntry(killer, victim, weapon, killerTeam) {
-        if (pendingEntries.length >= MAX_QUEUE_SIZE) pendingEntries.shift();
-        pendingEntries.push({ killer, victim, weapon, killerTeam });
+    function trimPendingQueue() {
+        if (pendingEntries.length <= MAX_QUEUE_SIZE) return;
+        const overflow = pendingEntries.length - MAX_QUEUE_SIZE;
+        pendingEntries.splice(0, overflow);
     }
 
-    function flushNextQueuedEntry() {
+    // ── Schedule kill entries across the elapsed poll window ──
+    function queueScheduledEntries(entries, pollWindowMs) {
+        if (!entries.length) return null;
+        const now = Date.now();
+        const spacing = Math.max(
+            MIN_SCHEDULE_GAP_MS,
+            Math.min(MAX_SCHEDULE_GAP_MS, Math.floor(pollWindowMs / Math.max(entries.length, 1)))
+        );
+        let releaseAt = Math.max(now + 40, nextScheduledReleaseAt);
+
+        entries.forEach(entry => {
+            pendingEntries.push({ ...entry, releaseAt });
+            releaseAt += spacing;
+        });
+
+        nextScheduledReleaseAt = releaseAt;
+        trimPendingQueue();
+        return spacing;
+    }
+
+    function flushDueQueuedEntry() {
         if (!pendingEntries.length) return;
+        if (pendingEntries[0].releaseAt > Date.now()) return;
         const next = pendingEntries.shift();
         addEntry(next.killer, next.victim, next.weapon, next.killerTeam);
+        if (!pendingEntries.length) nextScheduledReleaseAt = 0;
     }
 
     // ── Main poll ──
     async function poll() {
+        if (pollInFlight) return;
+        pollInFlight = true;
+        const pollStartedAt = Date.now();
+        const pollWindowMs = Math.max(250, Math.min(2000, pollStartedAt - lastPollAt));
+        lastPollAt = pollStartedAt;
+
         const api = cachedConfig.api_endpoint;
         if (!api) {
             document.getElementById("debug").textContent = "Awaiting API — check hub";
+            pollInFlight = false;
             return;
         }
         try {
@@ -468,6 +502,7 @@
             // Remove matched victims so they aren't reused
             const unmatchedDeaths = [...newDeaths];
 
+            const batch = [];
             killers.forEach(killer => {
                 // Prefer opposite faction victim
                 let victimIdx = unmatchedDeaths.findIndex(d => d.team !== killer.team);
@@ -478,27 +513,36 @@
                     ? unmatchedDeaths.splice(victimIdx, 1)[0].name
                     : null;
 
-                queueEntry(killer.name, victim || "Enemy", killer.weapon, killer.team);
+                batch.push({
+                    killer: killer.name,
+                    victim: victim || "Enemy",
+                    weapon: killer.weapon,
+                    killerTeam: killer.team
+                });
             });
+
+            const scheduledGap = queueScheduledEntries(batch, pollWindowMs);
 
             if (killers.length) {
                 document.getElementById("debug").textContent =
-                    `Detected +${killers.length} | Queue: ${pendingEntries.length}`;
+                    `Detected +${killers.length} | Queue: ${pendingEntries.length} | Pace: ${scheduledGap || "-"}ms`;
             } else if (pendingEntries.length) {
-                document.getElementById("debug").textContent = `Rendering queue: ${pendingEntries.length}`;
+                document.getElementById("debug").textContent = `Streaming queue: ${pendingEntries.length}`;
             } else {
                 document.getElementById("debug").textContent = "Watching...";
             }
 
         } catch(e) {
             document.getElementById("debug").textContent = "Signal lost: " + e.message;
+        } finally {
+            pollInFlight = false;
         }
     }
 
     pollConfig().then(() => poll());
     setInterval(pollConfig, 1000);
     setInterval(poll, POLL_MS);
-    setInterval(flushNextQueuedEntry, RENDER_MS);
+    setInterval(flushDueQueuedEntry, RENDER_TICK_MS);
 </script>
 </body>
 </html>
