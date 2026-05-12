@@ -1,3 +1,8 @@
+v2.0.13
+Fixed Spotlight save failures for special-character names on Windows by writing/reading DO_NOT_EDIT_player.txt explicitly as UTF-8
+Added safe legacy decode fallbacks when loading existing player files so older non-UTF8 content does not break Spotlight selection
+This resolves the "SAVE FAILED — is DO_NOT_EDIT_server.py running?" error when selecting names with non-ASCII symbols from the hub suggestions
+
 v2.0.12
 Fixed Player Spotlight selection for special-character names by adding Unicode-safe normalization across both hub search scoring and spotlight matching
 Improved name matching resilience for accents, smart quotes, and invisible characters so selected names resolve to the intended live player more reliably

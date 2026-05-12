@@ -295,15 +295,20 @@ class HLLHandler(SimpleHTTPRequestHandler):
             json.dump(existing, f, indent=2)
 
     def read_player(self):
-        try:
-            with open(PLAYER_FILE, "r") as f:
-                return f.read().strip()
-        except:
-            return ""
+        # UTF-8 first (new writes), then legacy Windows fallbacks.
+        for enc in ("utf-8", "cp1252", "latin-1"):
+            try:
+                with open(PLAYER_FILE, "r", encoding=enc) as f:
+                    return f.read().strip()
+            except UnicodeDecodeError:
+                continue
+            except:
+                return ""
+        return ""
 
     def write_player(self, name):
-        with open(PLAYER_FILE, "w") as f:
-            f.write(name)
+        with open(PLAYER_FILE, "w", encoding="utf-8") as f:
+            f.write(str(name or ""))
 
 
 def get_local_ip():
@@ -326,7 +331,7 @@ if __name__ == "__main__":
         with open(CONFIG_FILE, "w") as f:
             json.dump({"api_endpoint": "", "api_logs_endpoint": "", "swap_sides": False, "player": "", "allied_faction": "ALLIES", "ticker_messages": []}, f, indent=2)
     if not os.path.exists(PLAYER_FILE):
-        with open(PLAYER_FILE, "w") as f:
+        with open(PLAYER_FILE, "w", encoding="utf-8") as f:
             f.write("")
 
     ip = get_local_ip()
