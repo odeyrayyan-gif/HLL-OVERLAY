@@ -889,9 +889,21 @@
             .replace(/'/g, '&#39;');
     }
 
+    function normalizeForMatch(text) {
+        let s = String(text || '');
+        try { s = s.normalize('NFKD'); } catch(e) {}
+        return s
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[\u200B-\u200D\uFEFF]/g, '')
+            .replace(/[’‘`´]/g, "'")
+            .replace(/[“”]/g, '"')
+            .toLowerCase()
+            .trim();
+    }
+
     function scoreMatch(playerName, query) {
-        const pl = String(playerName || '').toLowerCase();
-        const ql = query.toLowerCase().trim();
+        const pl = normalizeForMatch(playerName);
+        const ql = normalizeForMatch(query);
         if (!ql) return -1;
         if (!pl) return -1;
         if (pl === ql) return 100;

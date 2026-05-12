@@ -1,3 +1,8 @@
+v2.0.12
+Fixed Player Spotlight selection for special-character names by adding Unicode-safe normalization across both hub search scoring and spotlight matching
+Improved name matching resilience for accents, smart quotes, and invisible characters so selected names resolve to the intended live player more reliably
+Added stronger exact/normalized/loose matching priority in spotlight to reduce false fallback matches when special symbols differ between hub input and API payload
+
 v2.0.11
 Killfeed now runs in calm mode: entries remain in-frame (fixed 5-slot feed) instead of timing out, reducing flicker and visual chaos
 Added controlled steady rendering cadence plus backlog overflow summarization to avoid racing bursts while still signaling high-action periods

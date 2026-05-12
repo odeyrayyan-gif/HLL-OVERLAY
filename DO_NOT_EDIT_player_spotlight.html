@@ -189,7 +189,21 @@ const EXCLUDED_WEAPONS = [
     'brumm', 'stuh', 'strumpanzer', 'sfh', 'kv-2', 'm-10t', '152mm', '122mm', 'sherman spa'
 ];
 
-function normalize(n){ return String(n||"").toLowerCase().trim(); }
+function normalizeForMatch(n) {
+    let s = String(n || "");
+    try { s = s.normalize("NFKD"); } catch(e) {}
+    return s
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/[’‘`´]/g, "'")
+        .replace(/[“”]/g, '"')
+        .toLowerCase()
+        .trim();
+}
+
+function looseKey(n) {
+    return normalizeForMatch(n).replace(/[^a-z0-9]+/g, "");
+}
 
 async function fetchNoCache(url){
     const separator = url.includes("?") ? "&" : "?";
@@ -312,15 +326,28 @@ async function update(){
 
         let player = null;
         if(manual){
-            const n = normalize(manual);
+            const manualRaw = String(manual || "").trim();
+            const n = normalizeForMatch(manualRaw);
+            const nLoose = looseKey(manualRaw);
+            if (!n) {
+                statusBox.style.display = "block";
+                statusBox.textContent = "Type a player name in the hub";
+                document.getElementById("card").style.display = "none";
+                return;
+            }
             // Smart match: exact > word boundary > starts-with > contains
             const scored = stats
                 .map(p => {
-                    const pl = normalize(p.player);
-                    if (pl === n) return { p, score: 100 };
+                    const raw = String(p.player || "").trim();
+                    const pl = normalizeForMatch(raw);
+                    const plLoose = looseKey(raw);
+                    if (raw === manualRaw) return { p, score: 120 };
+                    if (pl === n) return { p, score: 110 };
+                    if (nLoose && plLoose && plLoose === nLoose) return { p, score: 105 };
                     if (pl.startsWith(n)) return { p, score: 90 };
-                    if (/(^|[\s|_.(\[])/.test(pl.slice(0, pl.indexOf(n) >= 0 ? pl.indexOf(n) : 0) + (pl.includes(n) ? pl[pl.indexOf(n)-1]||'' : ''))) return { p, score: 80 };
-                    if (pl.includes(n)) return { p, score: 50 };
+                    const idx = pl.indexOf(n);
+                    if (idx > 0 && ' |_.(['.includes(pl[idx - 1])) return { p, score: 80 };
+                    if (idx >= 0) return { p, score: 50 };
                     return { p, score: -1 };
                 })
                 .filter(x => x.score >= 0)
