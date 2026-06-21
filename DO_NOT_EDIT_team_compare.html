@@ -492,13 +492,21 @@
 
                     // Allied weapon killed this player → Allied team scored a kill
                     // Axis weapon killed this player → Axis team scored a kill
+                    const cat = getCategoryForWeapon(weapon);
                     let side = null;
                     if (isAllied && !isAxis) side = "Allies";
                     else if (isAxis && !isAllied) side = "Axis";
 
+                    // Satchel/neutral weapon names often don't encode faction.
+                    // In those cases, infer killer side as the opposite of victim team.
+                    if (!side && cat === "satchel") {
+                        const victimTeam = identifyTeam(p);
+                        if (victimTeam === "Allies") side = "Axis";
+                        else if (victimTeam === "Axis") side = "Allies";
+                    }
+
                     if (!side) { unknownKills += deaths; continue; }
 
-                    const cat = getCategoryForWeapon(weapon);
                     teams[side].total += deaths;
                     teams[side].cats[cat] += deaths;
                 }

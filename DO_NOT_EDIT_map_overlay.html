@@ -441,9 +441,19 @@
                     const n = weapon.toLowerCase();
                     const isAllied = ALLIED_SIGS.some(s => n.includes(s));
                     const isAxis   = AXIS_SIGS.some(s => n.includes(s));
+                    const cat = weaponCategory(weapon);
                     let side = null;
                     if (isAllied && !isAxis) side = "Allies";
                     else if (isAxis && !isAllied) side = "Axis";
+
+                    // Satchel/neutral weapon labels may not include faction.
+                    // Infer killer side as opposite of the victim team.
+                    if (!side && cat === "satchel") {
+                        const victimTeam = identifyTeam(p);
+                        if (victimTeam === "Allies") side = "Axis";
+                        else if (victimTeam === "Axis") side = "Allies";
+                    }
+
                     if (!side) return;
                     deathKills[side][weapon] = (deathKills[side][weapon] || 0) + deaths;
                 });
